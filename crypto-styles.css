@@ -175,6 +175,13 @@ body {
     color: var(--accent-green);
 }
 
+.letter-input.correct-answer {
+    color: #FFD700 !important;
+    font-weight: 700;
+    text-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
+    transition: all 0.3s ease;
+}
+
 .grid-cell.white .letter-input {
     color: var(--primary-color);
 }

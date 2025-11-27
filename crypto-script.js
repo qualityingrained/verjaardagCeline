@@ -4,6 +4,18 @@ class CryptoPuzzle {
         this.letterMap = new Map();
         this.totalCells = 0;
         this.filledCells = 0;
+        this.correctAnswers = {
+            // Row answers: [row_index, start_col, answer]
+            rows: [
+                [0, 3, 'GRAAN'],    // Row 1: G + RAAN
+                [1, 2, 'KISTEN'],   // Row 2: KI + S + TEN
+                [2, 1, 'KOSTEN'],   // Row 3: KO + S + TEN
+                [3, 0, 'ELEMENT'],  // Row 4: ELEM + E + NT
+                [4, 1, 'SALON'],    // Row 5: SA + L + ON
+                [5, 2, 'KLAAR'],    // Row 6: KL + A + AR
+                [6, 1, 'BIER']      // Row 7: BI + E + R
+            ]
+        };
         this.init();
     }
 
@@ -47,7 +59,13 @@ class CryptoPuzzle {
             }
         }
 
+        // Auto-navigate to next cell in the same row if letter was entered
+        if (letter) {
+            this.navigateToNextCellInRow(input);
+        }
+
         this.updateProgress();
+        this.checkAnswers();
         this.checkCompletion();
         this.addRippleEffect(input.parentElement);
     }
@@ -103,6 +121,30 @@ class CryptoPuzzle {
         }
     }
 
+    navigateToNextCellInRow(currentInput) {
+        const allInputs = Array.from(document.querySelectorAll('.letter-input'));
+        const currentIndex = allInputs.indexOf(currentInput);
+        const gridWidth = 8;
+        
+        // Calculate current row
+        const currentRow = Math.floor(currentIndex / gridWidth);
+        const currentCol = currentIndex % gridWidth;
+        
+        // Find next input in the same row
+        for (let col = currentCol + 1; col < gridWidth; col++) {
+            const nextIndex = currentRow * gridWidth + col;
+            if (nextIndex < allInputs.length) {
+                const nextInput = allInputs[nextIndex];
+                // Check if this input exists and is visible (not in an empty cell)
+                if (nextInput && nextInput.parentElement.classList.contains('number-cell')) {
+                    nextInput.focus();
+                    nextInput.select(); // Select any existing text for easy replacement
+                    break;
+                }
+            }
+        }
+    }
+
     updateAllCellsWithNumber(number, letter) {
         // Don't sync blank cells
         if (number === 'blank') return;
@@ -122,6 +164,11 @@ class CryptoPuzzle {
                 }
             }
         });
+        
+        // Check answers after syncing
+        setTimeout(() => {
+            this.checkAnswers();
+        }, 50);
     }
 
     countTotalCells() {
@@ -138,6 +185,46 @@ class CryptoPuzzle {
         if (progressFill) {
             progressFill.style.width = `${progress}%`;
         }
+    }
+
+    checkAnswers() {
+        const allInputs = Array.from(document.querySelectorAll('.letter-input'));
+        const gridWidth = 8;
+
+        this.correctAnswers.rows.forEach(([rowIndex, startCol, answer]) => {
+            let isRowCorrect = true;
+            const rowInputs = [];
+
+            // Get all inputs for this row
+            for (let i = 0; i < answer.length; i++) {
+                const inputIndex = rowIndex * gridWidth + startCol + i;
+                if (inputIndex < allInputs.length) {
+                    const input = allInputs[inputIndex];
+                    if (input && input.parentElement.classList.contains('number-cell')) {
+                        rowInputs.push(input);
+                        if (input.value.toUpperCase() !== answer[i]) {
+                            isRowCorrect = false;
+                        }
+                    }
+                }
+            }
+
+            // Apply feedback after 500ms delay
+            if (isRowCorrect && rowInputs.length === answer.length) {
+                setTimeout(() => {
+                    rowInputs.forEach(input => {
+                        if (input.parentElement.classList.contains('white')) {
+                            input.classList.add('correct-answer');
+                        }
+                    });
+                }, 500);
+            } else {
+                // Remove correct styling if answer becomes incorrect
+                rowInputs.forEach(input => {
+                    input.classList.remove('correct-answer');
+                });
+            }
+        });
     }
 
     checkCompletion() {
