@@ -33,6 +33,38 @@ body {
     background-color: var(--white);
     overflow-x: hidden;
     line-height: 1.6;
+    cursor: default;
+}
+
+/* Ripple effect */
+.ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(59, 130, 246, 0.3);
+    transform: scale(0);
+    animation: rippleAnimation 0.6s ease-out;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+@keyframes rippleAnimation {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+/* Interactive cursor for clickable elements */
+.gallery-item,
+.feature-image,
+.step-image,
+.dance-image-container,
+.image-showcase,
+.culture-image-container,
+.final-image-container {
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
 }
 
 /* Hero Section */
@@ -177,6 +209,7 @@ body {
     padding: 120px 40px;
     max-width: 1200px;
     margin: 0 auto;
+    transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
 .section-content {
@@ -361,12 +394,23 @@ body {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    transition: transform 0.3s ease, filter 0.3s ease;
+    display: inline-block;
+}
+
+.feature-content h3:hover {
+    filter: brightness(1.2);
 }
 
 .feature-content p {
     font-size: 18px;
     line-height: 1.8;
     color: var(--text-secondary);
+    transition: color 0.3s ease;
+}
+
+.feature-item:hover .feature-content p {
+    color: var(--text-primary);
 }
 
 /* Dance Intro */
@@ -448,11 +492,22 @@ body {
     height: 130%;
     background: linear-gradient(rgba(6, 182, 212, 0.3), rgba(20, 184, 166, 0.3)),
                 url('images/dance-intro.jpg') center/cover;
-    transition: transform 0.8s ease;
+    animation: gentleFloat 6s ease-in-out infinite;
+    transition: filter 0.6s ease;
 }
 
 .dance-image-container:hover .dance-image {
-    transform: scale(1.05);
+    filter: brightness(1.1) contrast(1.05);
+    animation-play-state: paused;
+}
+
+@keyframes gentleFloat {
+    0%, 100% {
+        transform: translateY(0) scale(1);
+    }
+    50% {
+        transform: translateY(-15px) scale(1.02);
+    }
 }
 
 /* Couple Showcase */
@@ -581,6 +636,14 @@ body {
 .sequence-header {
     text-align: center;
     margin-bottom: 100px;
+    opacity: 1;
+    position: relative;
+    z-index: 2;
+}
+
+.sequence-header .section-title {
+    opacity: 1 !important;
+    transform: none !important;
 }
 
 .sequence-container {
@@ -695,12 +758,23 @@ body {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    transition: transform 0.3s ease, filter 0.3s ease;
+    display: inline-block;
+}
+
+.step-content h3:hover {
+    filter: brightness(1.2);
 }
 
 .step-content p {
     font-size: 18px;
     line-height: 1.8;
     color: var(--text-secondary);
+    transition: color 0.3s ease;
+}
+
+.sequence-step:hover .step-content p {
+    color: var(--text-primary);
 }
 
 /* Culture Section */

@@ -243,3 +243,203 @@ document.querySelectorAll('.section-title, .dance-title, .final-title').forEach(
     titleObserver.observe(title);
 });
 
+// Interactive mouse parallax for feature images
+document.querySelectorAll('.feature-item').forEach(item => {
+    item.addEventListener('mousemove', (e) => {
+        const rect = item.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        
+        const moveX = (x - centerX) / 15;
+        const moveY = (y - centerY) / 15;
+        
+        const image = item.querySelector('.feature-image');
+        if (image) {
+            image.style.transform = `scale(1.08) rotate(1deg) translate(${moveX}px, ${moveY}px)`;
+        }
+    });
+    
+    item.addEventListener('mouseleave', () => {
+        const image = item.querySelector('.feature-image');
+        if (image) {
+            image.style.transform = 'scale(1) rotate(0deg)';
+        }
+    });
+});
+
+// Removed mouse parallax for dance image - using CSS animation instead
+
+// Interactive step images
+document.querySelectorAll('.sequence-step').forEach(step => {
+    step.addEventListener('mousemove', (e) => {
+        const rect = step.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        
+        const moveX = (x - centerX) / 25;
+        const moveY = (y - centerY) / 25;
+        
+        const image = step.querySelector('.step-image');
+        if (image) {
+            image.style.transform = `scale(1.1) rotate(-1deg) translate(${moveX}px, ${moveY}px)`;
+        }
+    });
+    
+    step.addEventListener('mouseleave', () => {
+        const image = step.querySelector('.step-image');
+        if (image) {
+            image.style.transform = 'scale(1) rotate(0deg)';
+        }
+    });
+});
+
+// Interactive text hover effects
+document.querySelectorAll('.feature-content h3, .step-content h3').forEach(heading => {
+    heading.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateX(10px) scale(1.05)';
+        this.style.transition = 'transform 0.3s ease';
+    });
+    
+    heading.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateX(0) scale(1)';
+    });
+});
+
+// Scroll-based subtle scale effect for sections (subtle enhancement)
+let lastScroll = 0;
+window.addEventListener('scroll', () => {
+    const scrolled = window.pageYOffset;
+    const sections = document.querySelectorAll('.section');
+    
+    sections.forEach(section => {
+        const rect = section.getBoundingClientRect();
+        const sectionTop = rect.top;
+        const sectionHeight = rect.height;
+        const windowHeight = window.innerHeight;
+        
+        // Calculate scroll progress through section (subtle scale only)
+        if (sectionTop < windowHeight && sectionTop > -sectionHeight) {
+            const progress = Math.max(0, Math.min(1, (windowHeight - sectionTop) / (windowHeight + sectionHeight)));
+            const scale = 0.98 + (progress * 0.02); // Very subtle scale effect
+            
+            // Only apply if section is visible (has visible class or is in viewport)
+            if (section.querySelector('.visible') || progress > 0.3) {
+                section.style.transform = `scale(${scale})`;
+            }
+        }
+    });
+    
+    lastScroll = scrolled;
+});
+
+// Interactive showcase images
+document.querySelectorAll('.image-showcase').forEach(showcase => {
+    showcase.addEventListener('mousemove', (e) => {
+        const rect = showcase.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        
+        const moveX = (x - centerX) / 30;
+        const moveY = (y - centerY) / 30;
+        
+        const image = showcase.querySelector('.showcase-image');
+        if (image) {
+            image.style.transform = `scale(1.05) translate(${moveX}px, ${moveY}px)`;
+        }
+    });
+    
+    showcase.addEventListener('mouseleave', () => {
+        const image = showcase.querySelector('.showcase-image');
+        if (image) {
+            image.style.transform = 'scale(1) translate(0, 0)';
+        }
+    });
+});
+
+// Interactive culture image
+document.querySelectorAll('.culture-image-container').forEach(container => {
+    container.addEventListener('mousemove', (e) => {
+        const rect = container.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        
+        const moveX = (x - centerX) / 20;
+        const moveY = (y - centerY) / 20;
+        
+        const image = container.querySelector('.culture-image');
+        if (image) {
+            image.style.transform = `translate(${moveX}px, ${moveY}px) scale(1.05)`;
+        }
+    });
+    
+    container.addEventListener('mouseleave', () => {
+        const image = container.querySelector('.culture-image');
+        if (image) {
+            image.style.transform = 'translate(0, 0) scale(1)';
+        }
+    });
+});
+
+// Interactive final hero image
+document.querySelectorAll('.final-image-container').forEach(container => {
+    container.addEventListener('mousemove', (e) => {
+        const rect = container.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        
+        const moveX = (x - centerX) / 25;
+        const moveY = (y - centerY) / 25;
+        
+        const image = container.querySelector('.final-image');
+        if (image) {
+            image.style.transform = `translate(${moveX}px, ${moveY}px) scale(1.05)`;
+        }
+    });
+    
+    container.addEventListener('mouseleave', () => {
+        const image = container.querySelector('.final-image');
+        if (image) {
+            image.style.transform = 'translate(0, 0) scale(1)';
+        }
+    });
+});
+
+// Add ripple effect on click for interactive elements
+document.querySelectorAll('.gallery-item, .feature-image, .step-image, .dance-image-container').forEach(element => {
+    element.addEventListener('click', function(e) {
+        const ripple = document.createElement('span');
+        const rect = this.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height);
+        const x = e.clientX - rect.left - size / 2;
+        const y = e.clientY - rect.top - size / 2;
+        
+        ripple.style.width = ripple.style.height = size + 'px';
+        ripple.style.left = x + 'px';
+        ripple.style.top = y + 'px';
+        ripple.classList.add('ripple');
+        
+        this.appendChild(ripple);
+        
+        setTimeout(() => {
+            ripple.remove();
+        }, 600);
+    });
+});
+
+// Text reveal removed - paragraphs display normally
+
