@@ -165,13 +165,25 @@ Focus on well-known, real establishments and attractions in Vienna. Research act
                   usedUrls.add(imageUrl);
                   console.log(`Found image for "${title}": ${imageUrl}`);
                   // Return image URL and photographer attribution
+                  const photographerName = photo.user?.name || photo.user?.username || 'Unsplash';
+                  const photographerUsername = photo.user?.username || 'unsplash';
+                  const photographerProfileUrl = photo.user?.links?.html 
+                    ? `${photo.user.links.html}?utm_source=vienna-trip-website&utm_medium=referral`
+                    : `https://unsplash.com/@${photographerUsername}?utm_source=vienna-trip-website&utm_medium=referral`;
+                  
+                  console.log(`Photographer info for "${title}":`, {
+                    name: photographerName,
+                    username: photographerUsername,
+                    profileUrl: photographerProfileUrl
+                  });
+                  
                   return {
                     imageUrl: imageUrl,
                     attribution: {
-                      photographer: photo.user.name,
-                      username: photo.user.username,
-                      profileUrl: `${photo.user.links.html}?utm_source=vienna-trip-website&utm_medium=referral`,
-                      unsplashUrl: `https://unsplash.com/?utm_source=vienna-trip-website&utm_medium=referral`
+                      photographer: photographerName,
+                      username: photographerUsername,
+                      profileUrl: photographerProfileUrl,
+                      unsplashUrl: 'https://unsplash.com/?utm_source=vienna-trip-website&utm_medium=referral'
                     }
                   };
                 }
@@ -181,13 +193,20 @@ Focus on well-known, real establishments and attractions in Vienna. Research act
               const photo = data.results[0];
               const imageUrl = `${photo.urls.regular}?w=800&q=80&fit=crop`;
               console.log(`Using first result for "${title}": ${imageUrl}`);
+              
+              const photographerName = photo.user?.name || photo.user?.username || 'Unsplash';
+              const photographerUsername = photo.user?.username || 'unsplash';
+              const photographerProfileUrl = photo.user?.links?.html 
+                ? `${photo.user.links.html}?utm_source=vienna-trip-website&utm_medium=referral`
+                : `https://unsplash.com/@${photographerUsername}?utm_source=vienna-trip-website&utm_medium=referral`;
+              
               return {
                 imageUrl: imageUrl,
                 attribution: {
-                  photographer: photo.user.name,
-                  username: photo.user.username,
-                  profileUrl: `${photo.user.links.html}?utm_source=vienna-trip-website&utm_medium=referral`,
-                  unsplashUrl: `https://unsplash.com/?utm_source=vienna-trip-website&utm_medium=referral`
+                  photographer: photographerName,
+                  username: photographerUsername,
+                  profileUrl: photographerProfileUrl,
+                  unsplashUrl: 'https://unsplash.com/?utm_source=vienna-trip-website&utm_medium=referral'
                 }
               };
             } else {

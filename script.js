@@ -781,16 +781,48 @@ function initVisitModals() {
       // Add attribution if available
       const imageContainer = modalImage.parentElement;
       let attributionEl = imageContainer.querySelector(".modal-attribution");
-      if (data.attribution) {
+      
+      // Check if image is from Unsplash
+      const isUnsplashImage = data.imageUrl && (
+        data.imageUrl.includes('unsplash.com') || 
+        data.imageUrl.includes('source.unsplash.com')
+      );
+      
+      // Handle attribution - could be object or string (from JSON parsing)
+      let attribution = data.attribution;
+      if (typeof attribution === 'string') {
+        try {
+          attribution = JSON.parse(attribution);
+        } catch (e) {
+          attribution = null;
+        }
+      }
+      
+      if (attribution && attribution.photographer) {
+        if (!attributionEl) {
+          attributionEl = document.createElement("div");
+          attributionEl.className = "modal-attribution";
+          imageContainer.appendChild(attributionEl);
+        }
+        const profileUrl = attribution.profileUrl || `https://unsplash.com/@${attribution.username || 'unsplash'}?utm_source=vienna-trip-website&utm_medium=referral`;
+        const unsplashUrl = attribution.unsplashUrl || 'https://unsplash.com/?utm_source=vienna-trip-website&utm_medium=referral';
+        attributionEl.innerHTML = `
+          <span>Photo by <a href="${profileUrl}" target="_blank" rel="noopener noreferrer">${attribution.photographer}</a> on <a href="${unsplashUrl}" target="_blank" rel="noopener noreferrer">Unsplash</a></span>
+        `;
+        attributionEl.style.display = "block";
+        console.log('Modal attribution set:', attribution);
+      } else if (isUnsplashImage) {
+        // Fallback attribution for Unsplash images without attribution data
         if (!attributionEl) {
           attributionEl = document.createElement("div");
           attributionEl.className = "modal-attribution";
           imageContainer.appendChild(attributionEl);
         }
         attributionEl.innerHTML = `
-          <span>Photo by <a href="${data.attribution.profileUrl}" target="_blank" rel="noopener noreferrer">${data.attribution.photographer}</a> on <a href="${data.attribution.unsplashUrl}" target="_blank" rel="noopener noreferrer">Unsplash</a></span>
+          <span>Photo on <a href="https://unsplash.com/?utm_source=vienna-trip-website&utm_medium=referral" target="_blank" rel="noopener noreferrer">Unsplash</a></span>
         `;
         attributionEl.style.display = "block";
+        console.log('Modal fallback attribution set for Unsplash image');
       } else if (attributionEl) {
         attributionEl.style.display = "none";
       }
@@ -1003,16 +1035,25 @@ function initVisitOptionsGenerator() {
 
       // Create attribution if available
       // Check if imageUrl is from Unsplash (always show attribution for Unsplash images)
-      const isUnsplashImage = fixedUrl && (fixedUrl.includes('unsplash.com') || fixedUrl.includes('source.unsplash.com'));
-      
+      const isUnsplashImage =
+        fixedUrl &&
+        (fixedUrl.includes("unsplash.com") ||
+          fixedUrl.includes("source.unsplash.com"));
+
       if (option.attribution && option.attribution.photographer) {
         const attribution = document.createElement("div");
         attribution.className = "visit-attribution";
         attribution.innerHTML = `
-          <span>Photo by <a href="${option.attribution.profileUrl || 'https://unsplash.com/'}" target="_blank" rel="noopener noreferrer">${option.attribution.photographer}</a> on <a href="${option.attribution.unsplashUrl || 'https://unsplash.com/'}" target="_blank" rel="noopener noreferrer">Unsplash</a></span>
+          <span>Photo by <a href="${
+            option.attribution.profileUrl || "https://unsplash.com/"
+          }" target="_blank" rel="noopener noreferrer">${
+          option.attribution.photographer
+        }</a> on <a href="${
+          option.attribution.unsplashUrl || "https://unsplash.com/"
+        }" target="_blank" rel="noopener noreferrer">Unsplash</a></span>
         `;
         imageDiv.appendChild(attribution);
-        console.log('Added attribution for:', option.title, option.attribution);
+        console.log("Added attribution for:", option.title, option.attribution);
       } else if (isUnsplashImage) {
         // Fallback attribution for Unsplash images without attribution data
         const attribution = document.createElement("div");
@@ -1021,7 +1062,10 @@ function initVisitOptionsGenerator() {
           <span>Photo on <a href="https://unsplash.com/?utm_source=vienna-trip-website&utm_medium=referral" target="_blank" rel="noopener noreferrer">Unsplash</a></span>
         `;
         imageDiv.appendChild(attribution);
-        console.log('Added fallback attribution for Unsplash image:', option.title);
+        console.log(
+          "Added fallback attribution for Unsplash image:",
+          option.title
+        );
       }
 
       card.appendChild(imageDiv);
