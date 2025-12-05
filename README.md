@@ -86,10 +86,30 @@ Webpage/
 
 1. Push to GitHub
 2. Import project in Vercel
-3. Add environment variables in Vercel dashboard:
-   - `OPENWEATHER_API_KEY`
-   - `OPENAI_API_KEY` (optional)
-4. Deploy!
+3. **Add environment variables in Vercel dashboard:**
+   - Go to your project in Vercel Dashboard
+   - Navigate to **Settings** → **Environment Variables**
+   - Add the following variables:
+     - `OPENWEATHER_API_KEY` - Your OpenWeatherMap API key
+     - `OPENAI_API_KEY` - Your OpenAI API key (optional, for AI features)
+     - `UNSPLASH_ACCESS_KEY` - Your Unsplash access key (optional, for better images)
+   - **Important**: Make sure to add them for the correct environment:
+     - **Production** - for your live site
+     - **Preview** - for preview deployments
+     - **Development** - for local development (if using Vercel CLI)
+4. **Redeploy after adding environment variables:**
+   - After adding/updating environment variables, you MUST redeploy
+   - Go to **Deployments** tab
+   - Click the three dots (⋯) on the latest deployment
+   - Select **Redeploy**
+   - Or trigger a new deployment by pushing a commit
+
+**Troubleshooting API Keys:**
+
+- If API keys aren't working, verify they're set correctly in Vercel dashboard
+- Check that you've redeployed after adding the variables
+- Variable names are case-sensitive: `OPENWEATHER_API_KEY` (all caps)
+- The API route will log debug info in development mode if keys are missing
 
 The `api/weather.js` serverless function will handle API routes in production.
 
