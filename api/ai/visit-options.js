@@ -44,19 +44,28 @@ module.exports = async function handler(req, res) {
 
 CRITICAL: Return ONLY valid JSON object with an "options" array property. No additional text, markdown, or code blocks.
 
+IMPORTANT RULES FOR TITLES:
+- Titles MUST be concrete, specific names of actual places in Vienna
+- For restaurants: Use actual restaurant names like "Figlmüller", "Plachutta", "Café Central", "Steirereck", "Mraz & Sohn"
+- For bars: Use actual bar names like "Loos Bar", "Sky Bar", "Volksgarten", "Das Loft"
+- For cafes: Use actual cafe names like "Café Sacher", "Café Demel", "Café Hawelka", "Café Landtmann"
+- For attractions: Use actual names like "Schönbrunn Palace", "St. Stephen's Cathedral", "Belvedere Palace"
+- NEVER use generic titles like "A Restaurant", "A Bar", "A Cafe" - always use specific, real place names
+- If you don't know a specific name, research and provide a real, well-known establishment in Vienna
+
 Each option in the "options" array must include:
-- "id": unique identifier (lowercase, no spaces, e.g., "vienna-opera")
-- "title": short title for the card (max 30 characters)
-- "imageSearchTerm": an evocative, descriptive search term for finding beautiful images. For famous locations, use specific names (e.g., "vienna opera house", "schonbrunn palace vienna"). For less-known places or experiences, create vivid atmosphere descriptions that capture the mood and feeling (e.g., "elegant vienna restaurant candlelit dinner", "romantic vienna evening baroque architecture", "vienna coffee house cozy interior", "vienna street scene historic buildings"). Always focus on creating search terms that will return attractive, evocative images that suggest the experience and atmosphere, even if not the exact location. Use descriptive, mood-setting words like "elegant", "romantic", "cozy", "vibrant", "sophisticated", "charming", "beautiful", "stunning", "baroque", "imperial", "luxurious", etc.
-- "description": brief description for the card (1-2 sentences, max 100 characters)
+- "id": unique identifier (lowercase, no spaces, e.g., "figlmuller-restaurant")
+- "title": CONCRETE, SPECIFIC name of an actual place in Vienna (e.g., "Figlmüller", "Loos Bar", "Café Central") - NOT generic descriptions
+- "imageSearchTerm": descriptive search term for finding images. Use the actual place name plus descriptive words (e.g., "figlmuller restaurant vienna interior", "loos bar vienna art nouveau", "cafe central vienna elegant interior", "schonbrunn palace vienna baroque architecture"). Include the actual place name when possible, plus atmosphere words like "elegant", "romantic", "cozy", "vibrant", "sophisticated", "baroque", "imperial", etc.
+- "description": brief description mentioning what makes this specific place special (1-2 sentences, max 100 characters)
 - "content": detailed HTML content for the modal popup including:
-  * An introduction paragraph
-  * "What to See" section with bullet points
+  * An introduction paragraph about this SPECIFIC place
+  * "What to See" or "What to Experience" section with bullet points about this specific location
   * "Best Time to Visit" section
-  * "Tips" section
+  * "Tips" section with specific advice about this place
   * Use proper HTML tags: <h4>, <p>, <ul>, <li>, <strong>
 
-Limit to 6-8 options maximum. Focus on Vienna attractions, activities, restaurants, or experiences related to the query.
+Limit to 6-8 options maximum. Focus on Vienna attractions, activities, restaurants, bars, cafes, or experiences related to the query. Always use REAL, SPECIFIC place names.
 
 DO NOT include imageUrl in your response. Only provide imageSearchTerm. The system will automatically fetch real images based on the search term.
 
@@ -77,13 +86,15 @@ Example JSON format:
 
 Return a JSON object with an "options" array containing 6-8 options. 
 
-For each option, provide an "imageSearchTerm" that is an evocative, descriptive phrase designed to find beautiful, mood-setting images. 
+CRITICAL REQUIREMENTS:
+1. Titles MUST be concrete, specific names of REAL places in Vienna (restaurants, bars, cafes, attractions)
+   - Examples: "Figlmüller", "Loos Bar", "Café Central", "Schönbrunn Palace", "Steirereck"
+   - NEVER use generic titles like "A Restaurant" or "A Bar"
+2. For imageSearchTerm: Use the actual place name + descriptive words
+   - Examples: "figlmuller restaurant vienna", "loos bar vienna art nouveau", "cafe central vienna elegant"
+   - Include atmosphere words: elegant, romantic, cozy, vibrant, sophisticated, baroque, imperial, etc.
 
-Guidelines:
-1. For famous locations: use specific names with descriptive atmosphere words ("vienna st stephens cathedral baroque architecture", "schonbrunn palace vienna imperial gardens")
-2. For less-known places or experiences: create vivid atmosphere descriptions ("elegant vienna restaurant candlelit dinner", "romantic vienna cafe cozy interior", "vienna baroque architecture golden hour", "vienna street market vibrant colors", "vienna nightlife elegant bar", "vienna wine bar sophisticated atmosphere")
-
-Always include descriptive, mood-setting words (elegant, romantic, cozy, vibrant, sophisticated, charming, beautiful, stunning, baroque, imperial, luxurious, intimate, lively, serene, grand, majestic, candlelit, golden hour, etc.) to ensure the search returns attractive, evocative images that capture the feeling and atmosphere of the experience, even if not the exact location. The system will automatically fetch real images based on these search terms.`;
+Focus on well-known, real establishments and attractions in Vienna. Research actual names if needed.`;
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",

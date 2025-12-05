@@ -777,30 +777,30 @@ function initVisitModals() {
       modalImage.style.backgroundSize = "cover";
       modalImage.style.backgroundPosition = "center";
       modalImage.className = "modal-image";
-      
+
       // Add attribution if available
       const imageContainer = modalImage.parentElement;
-      let attributionEl = imageContainer.querySelector('.modal-attribution');
+      let attributionEl = imageContainer.querySelector(".modal-attribution");
       if (data.attribution) {
         if (!attributionEl) {
-          attributionEl = document.createElement('div');
-          attributionEl.className = 'modal-attribution';
+          attributionEl = document.createElement("div");
+          attributionEl.className = "modal-attribution";
           imageContainer.appendChild(attributionEl);
         }
         attributionEl.innerHTML = `
           <span>Photo by <a href="${data.attribution.profileUrl}" target="_blank" rel="noopener noreferrer">${data.attribution.photographer}</a> on <a href="${data.attribution.unsplashUrl}" target="_blank" rel="noopener noreferrer">Unsplash</a></span>
         `;
-        attributionEl.style.display = 'block';
+        attributionEl.style.display = "block";
       } else if (attributionEl) {
-        attributionEl.style.display = 'none';
+        attributionEl.style.display = "none";
       }
     } else if (data.image) {
       modalImage.className = `modal-image ${data.image}`;
       // Hide attribution for static images
       const imageContainer = modalImage.parentElement;
-      const attributionEl = imageContainer.querySelector('.modal-attribution');
+      const attributionEl = imageContainer.querySelector(".modal-attribution");
       if (attributionEl) {
-        attributionEl.style.display = 'none';
+        attributionEl.style.display = "none";
       }
     }
 
@@ -1002,13 +1002,26 @@ function initVisitOptionsGenerator() {
       title.textContent = option.title;
 
       // Create attribution if available
-      if (option.attribution) {
+      // Check if imageUrl is from Unsplash (always show attribution for Unsplash images)
+      const isUnsplashImage = fixedUrl && (fixedUrl.includes('unsplash.com') || fixedUrl.includes('source.unsplash.com'));
+      
+      if (option.attribution && option.attribution.photographer) {
         const attribution = document.createElement("div");
         attribution.className = "visit-attribution";
         attribution.innerHTML = `
-          <span>Photo by <a href="${option.attribution.profileUrl}" target="_blank" rel="noopener noreferrer">${option.attribution.photographer}</a> on <a href="${option.attribution.unsplashUrl}" target="_blank" rel="noopener noreferrer">Unsplash</a></span>
+          <span>Photo by <a href="${option.attribution.profileUrl || 'https://unsplash.com/'}" target="_blank" rel="noopener noreferrer">${option.attribution.photographer}</a> on <a href="${option.attribution.unsplashUrl || 'https://unsplash.com/'}" target="_blank" rel="noopener noreferrer">Unsplash</a></span>
         `;
         imageDiv.appendChild(attribution);
+        console.log('Added attribution for:', option.title, option.attribution);
+      } else if (isUnsplashImage) {
+        // Fallback attribution for Unsplash images without attribution data
+        const attribution = document.createElement("div");
+        attribution.className = "visit-attribution";
+        attribution.innerHTML = `
+          <span>Photo on <a href="https://unsplash.com/?utm_source=vienna-trip-website&utm_medium=referral" target="_blank" rel="noopener noreferrer">Unsplash</a></span>
+        `;
+        imageDiv.appendChild(attribution);
+        console.log('Added fallback attribution for Unsplash image:', option.title);
       }
 
       card.appendChild(imageDiv);
