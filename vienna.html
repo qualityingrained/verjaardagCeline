@@ -17,7 +17,7 @@
     <section class="hero" id="hero">
       <div class="hero-content">
         <h1 class="hero-title" data-scroll>Vienna</h1>
-        <p class="hero-subtitle" data-scroll>Our Dance through Time</p>
+        <p class="hero-subtitle" data-scroll>2026</p>
         <div class="scroll-indicator">
           <span>Scroll to explore</span>
           <div class="scroll-arrow"></div>
@@ -30,7 +30,9 @@
 
     <!-- Overview Section -->
     <section class="section overview" id="overview">
-      <div class="section-content">
+      <div class="overview-background showcase-1"></div>
+      <div class="overview-overlay"></div>
+      <div class="overview-content">
         <h2 class="section-title" data-scroll>Where History Meets Elegance</h2>
         <p class="section-text" data-scroll>
           Vienna, the capital of Austria, stands as a testament to centuries of
@@ -40,88 +42,124 @@
           the waltz.
         </p>
       </div>
-      <div class="image-showcase" data-scroll>
-        <div class="showcase-image showcase-1"></div>
-      </div>
     </section>
 
     <!-- City Details Section -->
     <section class="section city-details" id="city">
-      <div class="section-header" data-scroll>
-        <h2 class="section-title">The Imperial City</h2>
-        <p class="section-subtitle">
-          Architectural Marvels and Timeless Beauty
-        </p>
-      </div>
-
-      <div class="feature-grid">
-        <div class="feature-item" data-scroll>
-          <div class="feature-image feature-1"></div>
-          <div class="feature-content">
-            <h3>Schönbrunn Palace</h3>
-            <p>
-              The former imperial summer residence, a UNESCO World Heritage
-              site, stands as a symbol of Baroque architecture and imperial
-              power. Its 1,441 rooms tell stories of emperors and empresses who
-              shaped European history.
-            </p>
-          </div>
-        </div>
-
-        <div class="feature-item reverse" data-scroll>
-          <div class="feature-image feature-2"></div>
-          <div class="feature-content">
-            <h3>St. Stephen's Cathedral</h3>
-            <p>
-              Rising 137 meters above the city, this Gothic masterpiece has
-              watched over Vienna for over 700 years. Its intricate stonework
-              and colorful tiled roof create a stunning silhouette against the
-              Austrian sky.
-            </p>
-          </div>
-        </div>
-
-        <div class="feature-item" data-scroll>
-          <div class="feature-image feature-3"></div>
-          <div class="feature-content">
-            <h3>The Ringstrasse</h3>
-            <p>
-              This grand boulevard, built on the site of the old city walls,
-              showcases Vienna's finest architecture. Museums, theaters, and
-              palaces line this 5.3-kilometer circular road, creating an
-              open-air museum of historic grandeur.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Dance Introduction -->
-    <section class="section dance-intro" id="dance">
-      <div class="dance-hero">
-        <div class="dance-content" data-scroll>
-          <h2 class="dance-title">Our Waltz</h2>
-          <p class="dance-description">
-            The Viennese waltz, with its smooth, continuous 3/4 rhythm, is more
-            than a historic ballroom tradition—it’s a reflection of us. Its
-            elegance lies in the way two partners move in effortless harmony,
-            anticipating each other’s steps, supporting each other’s turns, and
-            gliding through space as one. In its flowing motion and perfect
-            synchronization, I see the way we navigate life together: balanced,
-            connected, and always in tune, no matter how fast the world spins
-            around us.
+      <div class="section-content">
+        <div class="section-header" data-scroll>
+          <h2 class="section-title">Visit the Imperial City</h2>
+          <p class="section-subtitle">
+            Full of Architectural Marvels and Timeless Beauty
           </p>
         </div>
-        <div class="dance-image-container" data-scroll>
-          <div class="dance-image parallax-layer" data-speed="0.3"></div>
+
+        <!-- AI Visit Options Input -->
+        <div class="visit-query-container" data-scroll>
+          <div class="visit-query-box">
+            <input
+              type="text"
+              id="visitQueryInput"
+              class="visit-query-input"
+              placeholder="What do you want to do in Vienna?"
+              autocomplete="off"
+            />
+            <button id="visitQueryBtn" class="visit-query-btn">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+              <span>Generate Options</span>
+            </button>
+          </div>
+          <button
+            id="resetDefaultBtn"
+            class="reset-default-btn"
+            style="display: none"
+          >
+            <span>Show Default Options</span>
+          </button>
+        </div>
+
+        <div class="visit-options-grid" id="visitOptionsGrid">
+          <div class="visit-option" data-scroll data-visit="schonbrunn">
+            <div class="visit-image visit-1"></div>
+            <h3 class="visit-title">Schönbrunn Palace</h3>
+          </div>
+          <div class="visit-option" data-scroll data-visit="stephans">
+            <div class="visit-image visit-2"></div>
+            <h3 class="visit-title">St. Stephen's Cathedral</h3>
+          </div>
+          <div class="visit-option" data-scroll data-visit="ringstrasse">
+            <div class="visit-image visit-3"></div>
+            <h3 class="visit-title">The Ringstrasse</h3>
+          </div>
+          <div class="visit-option" data-scroll data-visit="hofburg">
+            <div class="visit-image visit-4"></div>
+            <h3 class="visit-title">Hofburg Palace</h3>
+          </div>
+          <div class="visit-option" data-scroll data-visit="belvedere">
+            <div class="visit-image visit-5"></div>
+            <h3 class="visit-title">Belvedere Palace</h3>
+          </div>
+          <div class="visit-option" data-scroll data-visit="opera">
+            <div class="visit-image visit-6"></div>
+            <h3 class="visit-title">Vienna State Opera</h3>
+          </div>
+          <div class="visit-option" data-scroll data-visit="prater">
+            <div class="visit-image visit-7"></div>
+            <h3 class="visit-title">Prater Park</h3>
+          </div>
+          <div class="visit-option" data-scroll data-visit="museums">
+            <div class="visit-image visit-8"></div>
+            <h3 class="visit-title">Museum Quarter</h3>
+          </div>
+          <div class="visit-option" data-scroll data-visit="cafe">
+            <div class="visit-image visit-9"></div>
+            <h3 class="visit-title">Historic Cafés</h3>
+          </div>
+          <div class="visit-option" data-scroll data-visit="naschmarkt">
+            <div class="visit-image visit-10"></div>
+            <h3 class="visit-title">Naschmarkt</h3>
+          </div>
+          <div class="visit-option" data-scroll data-visit="graben">
+            <div class="visit-image visit-11"></div>
+            <h3 class="visit-title">Graben & Kohlmarkt</h3>
+          </div>
+          <div class="visit-option" data-scroll data-visit="danube">
+            <div class="visit-image visit-12"></div>
+            <h3 class="visit-title">Danube Tower</h3>
+          </div>
         </div>
       </div>
     </section>
+
+    <!-- Visit Modal -->
+    <div class="visit-modal" id="visitModal">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <button class="modal-close" aria-label="Close modal">&times;</button>
+        <div class="modal-image-container">
+          <div class="modal-image" id="modalImage"></div>
+        </div>
+        <div class="modal-text">
+          <h2 class="modal-title" id="modalTitle"></h2>
+          <div class="modal-body" id="modalBody"></div>
+        </div>
+      </div>
+    </div>
 
     <!-- Detailed Dance Sequence -->
     <section class="section dance-sequence">
       <div class="sequence-header" data-scroll>
-        <h2 class="section-title">Our Plan Unfolded</h2>
+        <h1 class="section-title">Travelplan</h1>
       </div>
 
       <div class="sequence-container">
@@ -212,40 +250,17 @@
       </div>
     </section>
 
-    <!-- Dancing Couple Showcase -->
-    <section class="section couple-showcase">
-      <div class="showcase-header" data-scroll>
-        <h2 class="section-title">Giselle</h2>
-        <p class="section-subtitle">
-          Vienna has long been a cradle of artistic refinement, shaping ballet
-          with its deep musical heritage, elegant tradition, and enduring
-          devotion to classical performance.
-        </p>
-      </div>
-
-      <div class="couple-gallery">
-        <div class="gallery-item" data-scroll>
-          <div class="gallery-image couple-1"></div>
-          <div class="gallery-overlay">
-            <h3>Ethereal Ballet Mastery</h3>
-            <p>Weightless movement shaping emotion onstage.</p>
-          </div>
+    <!-- Weather Section -->
+    <section class="section weather-section" id="weather">
+      <div class="section-content">
+        <div class="section-header" data-scroll>
+          <h2 class="section-title">Weather in Vienna</h2>
         </div>
-
-        <div class="gallery-item" data-scroll>
-          <div class="gallery-image couple-2"></div>
-          <div class="gallery-overlay">
-            <h3>Haunted Romanticism Unveiled</h3>
-            <p>A timeless love story drifting into tragedy.</p>
+        <div class="weather-container" data-scroll>
+          <div class="weather-current" id="weatherCurrent">
+            <div class="weather-loading">Loading weather data...</div>
           </div>
-        </div>
-
-        <div class="gallery-item" data-scroll>
-          <div class="gallery-image couple-3"></div>
-          <div class="gallery-overlay">
-            <h3>Vienna’s Iconic Setting</h3>
-            <p>State Opera grandeur heightens every moment.</p>
-          </div>
+          <div class="weather-forecast" id="weatherForecast"></div>
         </div>
       </div>
     </section>
@@ -253,7 +268,7 @@
     <!-- Final Hero Section -->
     <section class="section final-hero">
       <div class="final-content" data-scroll>
-        <h3 class="final-title">24 - 27 April</h3>
+        <h3 class="final-title">24 - 28 April</h3>
         <p class="final-text">No kids allowed</p>
       </div>
       <div class="final-image-container">

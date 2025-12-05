@@ -1,0 +1,20 @@
+{
+  "name": "vienna-trip-website",
+  "version": "1.0.0",
+  "description": "Vienna trip website with weather and AI features",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "openai": "^4.20.0"
+  }
+}
+

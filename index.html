@@ -21,17 +21,24 @@
 
       <div class="puzzle-container">
         <div class="puzzle-card">
+          <div class="row-tip" id="rowTip"></div>
           <div class="grid-container">
-            <!-- Row 1: G - nothing before central, central, 4 white squares after (2 in first) -->
+            <!-- Row 1: empty, empty, empty, empty, yellow, number 2, blank, blank, blank -->
             <div class="grid-cell empty"></div>
             <div class="grid-cell empty"></div>
             <div class="grid-cell empty"></div>
-            <div class="grid-cell number-cell yellow" data-number="7">
+            <div class="grid-cell empty"></div>
+            <div
+              class="grid-cell number-cell yellow"
+              data-number="yellow-col-5"
+              data-col="5"
+            >
               <input
                 type="text"
                 class="letter-input"
                 maxlength="1"
-                data-number="7"
+                data-number="yellow-col-5"
+                data-row="0"
               />
             </div>
             <div class="grid-cell number-cell white" data-number="2">
@@ -41,34 +48,39 @@
                 class="letter-input"
                 maxlength="1"
                 data-number="2"
+                data-row="0"
               />
             </div>
-            <div class="grid-cell number-cell white" data-number="blank">
+            <div class="grid-cell number-cell blank" data-number="blank">
               <input
                 type="text"
                 class="letter-input"
                 maxlength="1"
                 data-number="blank"
+                data-row="0"
               />
             </div>
-            <div class="grid-cell number-cell white" data-number="blank">
+            <div class="grid-cell number-cell blank" data-number="blank">
               <input
                 type="text"
                 class="letter-input"
                 maxlength="1"
                 data-number="blank"
+                data-row="0"
               />
             </div>
-            <div class="grid-cell number-cell white" data-number="blank">
+            <div class="grid-cell number-cell blank" data-number="blank">
               <input
                 type="text"
                 class="letter-input"
                 maxlength="1"
                 data-number="blank"
+                data-row="0"
               />
             </div>
 
-            <!-- Row 2: I - 1 square before (6), central, 4 squares after (5, nothing, 1, nothing) -->
+            <!-- Row 2: empty, empty, empty, number 6, yellow, number 5, blank, empty, empty -->
+            <div class="grid-cell empty"></div>
             <div class="grid-cell empty"></div>
             <div class="grid-cell empty"></div>
             <div class="grid-cell number-cell white" data-number="6">
@@ -78,14 +90,20 @@
                 class="letter-input"
                 maxlength="1"
                 data-number="6"
+                data-row="1"
               />
             </div>
-            <div class="grid-cell number-cell yellow" data-number="8">
+            <div
+              class="grid-cell number-cell yellow"
+              data-number="yellow-col-5"
+              data-col="5"
+            >
               <input
                 type="text"
                 class="letter-input"
                 maxlength="1"
-                data-number="8"
+                data-number="yellow-col-5"
+                data-row="1"
               />
             </div>
             <div class="grid-cell number-cell white" data-number="5">
@@ -95,35 +113,23 @@
                 class="letter-input"
                 maxlength="1"
                 data-number="5"
+                data-row="1"
               />
             </div>
-            <div class="grid-cell number-cell white" data-number="blank">
+            <div class="grid-cell number-cell blank" data-number="blank">
               <input
                 type="text"
                 class="letter-input"
                 maxlength="1"
                 data-number="blank"
+                data-row="1"
               />
             </div>
-            <div class="grid-cell number-cell white" data-number="1">
-              <span class="number">1</span>
-              <input
-                type="text"
-                class="letter-input"
-                maxlength="1"
-                data-number="1"
-              />
-            </div>
-            <div class="grid-cell number-cell white" data-number="blank">
-              <input
-                type="text"
-                class="letter-input"
-                maxlength="1"
-                data-number="blank"
-              />
-            </div>
+            <div class="grid-cell empty"></div>
+            <div class="grid-cell empty"></div>
 
-            <!-- Row 3: S - 2 squares before (6, 4), central, 3 squares after (3, nothing, nothing) -->
+            <!-- Row 3: empty, empty, number 6, number 4, yellow, number 3, blank, blank, empty -->
+            <div class="grid-cell empty"></div>
             <div class="grid-cell empty"></div>
             <div class="grid-cell number-cell white" data-number="6">
               <span class="number">6</span>
@@ -132,6 +138,7 @@
                 class="letter-input"
                 maxlength="1"
                 data-number="6"
+                data-row="2"
               />
             </div>
             <div class="grid-cell number-cell white" data-number="4">
@@ -141,14 +148,20 @@
                 class="letter-input"
                 maxlength="1"
                 data-number="4"
+                data-row="2"
               />
             </div>
-            <div class="grid-cell number-cell yellow" data-number="9">
+            <div
+              class="grid-cell number-cell yellow"
+              data-number="yellow-col-5"
+              data-col="5"
+            >
               <input
                 type="text"
                 class="letter-input"
                 maxlength="1"
-                data-number="9"
+                data-number="yellow-col-5"
+                data-row="2"
               />
             </div>
             <div class="grid-cell number-cell white" data-number="3">
@@ -158,27 +171,30 @@
                 class="letter-input"
                 maxlength="1"
                 data-number="3"
+                data-row="2"
               />
             </div>
-            <div class="grid-cell number-cell white" data-number="blank">
+            <div class="grid-cell number-cell blank" data-number="blank">
               <input
                 type="text"
                 class="letter-input"
                 maxlength="1"
                 data-number="blank"
+                data-row="2"
               />
             </div>
-            <div class="grid-cell number-cell white" data-number="blank">
+            <div class="grid-cell number-cell blank" data-number="blank">
               <input
                 type="text"
                 class="letter-input"
                 maxlength="1"
                 data-number="blank"
+                data-row="2"
               />
             </div>
             <div class="grid-cell empty"></div>
 
-            <!-- Row 4: ELEMENT - ELEM + E + NT (4 before yellow, 2 after) -->
+            <!-- Row 4: number 1, blank, number 1, blank, yellow, blank, number 3, empty, empty -->
             <div class="grid-cell number-cell white" data-number="1">
               <span class="number">1</span>
               <input
@@ -186,14 +202,16 @@
                 class="letter-input"
                 maxlength="1"
                 data-number="1"
+                data-row="3"
               />
             </div>
-            <div class="grid-cell number-cell white" data-number="blank">
+            <div class="grid-cell number-cell blank" data-number="blank">
               <input
                 type="text"
                 class="letter-input"
                 maxlength="1"
                 data-number="blank"
+                data-row="3"
               />
             </div>
             <div class="grid-cell number-cell white" data-number="1">
@@ -203,31 +221,38 @@
                 class="letter-input"
                 maxlength="1"
                 data-number="1"
+                data-row="3"
               />
             </div>
-            <div class="grid-cell number-cell white" data-number="blank">
+            <div class="grid-cell number-cell blank" data-number="blank">
               <input
                 type="text"
                 class="letter-input"
                 maxlength="1"
                 data-number="blank"
+                data-row="3"
               />
             </div>
-            <div class="grid-cell number-cell yellow" data-number="1">
-              <span class="number">1</span>
+            <div
+              class="grid-cell number-cell yellow"
+              data-number="yellow-col-5"
+              data-col="5"
+            >
               <input
                 type="text"
                 class="letter-input"
                 maxlength="1"
-                data-number="1"
+                data-number="yellow-col-5"
+                data-row="3"
               />
             </div>
-            <div class="grid-cell number-cell white" data-number="blank">
+            <div class="grid-cell number-cell blank" data-number="blank">
               <input
                 type="text"
                 class="letter-input"
                 maxlength="1"
                 data-number="blank"
+                data-row="3"
               />
             </div>
             <div class="grid-cell number-cell white" data-number="3">
@@ -237,11 +262,14 @@
                 class="letter-input"
                 maxlength="1"
                 data-number="3"
+                data-row="3"
               />
             </div>
             <div class="grid-cell empty"></div>
+            <div class="grid-cell empty"></div>
 
-            <!-- Row 5: L - 2 squares before (5, nothing), central, 2 squares after (4, nothing) -->
+            <!-- Row 5: empty, empty, number 5, blank, yellow, number 4, blank, empty, empty -->
+            <div class="grid-cell empty"></div>
             <div class="grid-cell empty"></div>
             <div class="grid-cell number-cell white" data-number="5">
               <span class="number">5</span>
@@ -250,22 +278,29 @@
                 class="letter-input"
                 maxlength="1"
                 data-number="5"
+                data-row="4"
               />
             </div>
-            <div class="grid-cell number-cell white" data-number="blank">
+            <div class="grid-cell number-cell blank" data-number="blank">
               <input
                 type="text"
                 class="letter-input"
                 maxlength="1"
                 data-number="blank"
+                data-row="4"
               />
             </div>
-            <div class="grid-cell number-cell yellow" data-number="11">
+            <div
+              class="grid-cell number-cell yellow"
+              data-number="yellow-col-5"
+              data-col="5"
+            >
               <input
                 type="text"
                 class="letter-input"
                 maxlength="1"
-                data-number="11"
+                data-number="yellow-col-5"
+                data-row="4"
               />
             </div>
             <div class="grid-cell number-cell white" data-number="4">
@@ -275,20 +310,23 @@
                 class="letter-input"
                 maxlength="1"
                 data-number="4"
+                data-row="4"
               />
             </div>
-            <div class="grid-cell number-cell white" data-number="blank">
+            <div class="grid-cell number-cell blank" data-number="blank">
               <input
                 type="text"
                 class="letter-input"
                 maxlength="1"
                 data-number="blank"
+                data-row="4"
               />
             </div>
             <div class="grid-cell empty"></div>
             <div class="grid-cell empty"></div>
 
-            <!-- Row 6: L - 1 square before (6), central, 3 squares after (nothing, nothing, 2) -->
+            <!-- Row 6: empty, empty, empty, number 6, yellow, blank, blank, number 2, empty -->
+            <div class="grid-cell empty"></div>
             <div class="grid-cell empty"></div>
             <div class="grid-cell empty"></div>
             <div class="grid-cell number-cell white" data-number="6">
@@ -298,30 +336,38 @@
                 class="letter-input"
                 maxlength="1"
                 data-number="6"
+                data-row="5"
               />
             </div>
-            <div class="grid-cell number-cell yellow" data-number="12">
+            <div
+              class="grid-cell number-cell yellow"
+              data-number="yellow-col-5"
+              data-col="5"
+            >
               <input
                 type="text"
                 class="letter-input"
                 maxlength="1"
-                data-number="12"
+                data-number="yellow-col-5"
+                data-row="5"
               />
             </div>
-            <div class="grid-cell number-cell white" data-number="blank">
+            <div class="grid-cell number-cell blank" data-number="blank">
               <input
                 type="text"
                 class="letter-input"
                 maxlength="1"
                 data-number="blank"
+                data-row="5"
               />
             </div>
-            <div class="grid-cell number-cell white" data-number="blank">
+            <div class="grid-cell number-cell blank" data-number="blank">
               <input
                 type="text"
                 class="letter-input"
                 maxlength="1"
                 data-number="blank"
+                data-row="5"
               />
             </div>
             <div class="grid-cell number-cell white" data-number="2">
@@ -331,34 +377,43 @@
                 class="letter-input"
                 maxlength="1"
                 data-number="2"
+                data-row="5"
               />
             </div>
             <div class="grid-cell empty"></div>
 
-            <!-- Row 7: E - 2 squares before (no numbers), central, 1 square after (2) -->
+            <!-- Row 7: empty, empty, blank, blank, yellow, number 2, empty, empty, empty -->
             <div class="grid-cell empty"></div>
-            <div class="grid-cell number-cell white" data-number="blank">
+            <div class="grid-cell empty"></div>
+            <div class="grid-cell number-cell blank" data-number="blank">
               <input
                 type="text"
                 class="letter-input"
                 maxlength="1"
                 data-number="blank"
+                data-row="6"
               />
             </div>
-            <div class="grid-cell number-cell white" data-number="blank">
+            <div class="grid-cell number-cell blank" data-number="blank">
               <input
                 type="text"
                 class="letter-input"
                 maxlength="1"
                 data-number="blank"
+                data-row="6"
               />
             </div>
-            <div class="grid-cell number-cell yellow" data-number="13">
+            <div
+              class="grid-cell number-cell yellow"
+              data-number="yellow-col-5"
+              data-col="5"
+            >
               <input
                 type="text"
                 class="letter-input"
                 maxlength="1"
-                data-number="13"
+                data-number="yellow-col-5"
+                data-row="6"
               />
             </div>
             <div class="grid-cell number-cell white" data-number="2">
@@ -368,37 +423,12 @@
                 class="letter-input"
                 maxlength="1"
                 data-number="2"
+                data-row="6"
               />
             </div>
             <div class="grid-cell empty"></div>
             <div class="grid-cell empty"></div>
             <div class="grid-cell empty"></div>
-          </div>
-
-          <div class="clues-container">
-            <div class="clue-list">
-              <div class="clue-item">
-                <span class="clue-label">Veevoer</span>
-              </div>
-              <div class="clue-item">
-                <span class="clue-label">Instekdozen</span>
-              </div>
-              <div class="clue-item">
-                <span class="clue-label">Uitgaven van tokens</span>
-              </div>
-              <div class="clue-item">
-                <span class="clue-label">Periodiek onderdeel</span>
-              </div>
-              <div class="clue-item">
-                <span class="clue-label">Kamer van leningen (Eng.)</span>
-              </div>
-              <div class="clue-item">
-                <span class="clue-label">Niks meer aan te doen</span>
-              </div>
-              <div class="clue-item">
-                <span class="clue-label">Tapwaar</span>
-              </div>
-            </div>
           </div>
         </div>
       </div>
