@@ -2,6 +2,12 @@
   "functions": {
     "api/weather.js": {
       "maxDuration": 10
+    },
+    "api/ai.js": {
+      "maxDuration": 30
+    },
+    "api/ai/visit-options.js": {
+      "maxDuration": 60
     }
   },
   "headers": [
