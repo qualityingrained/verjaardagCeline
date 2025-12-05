@@ -563,10 +563,35 @@ body {
   background-size: cover;
   background-position: center;
   transition: transform 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: relative;
 }
 
 .visit-option:hover .visit-image {
   transform: scale(1.08);
+}
+
+.visit-attribution {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 12px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 11px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.visit-attribution a {
+  color: rgba(255, 255, 255, 0.95);
+  text-decoration: underline;
+  pointer-events: auto;
+  transition: color 0.2s ease;
+}
+
+.visit-attribution a:hover {
+  color: #fff;
 }
 
 .visit-title {
@@ -706,6 +731,7 @@ body {
   height: 400px;
   overflow: hidden;
   border-radius: 20px 20px 0 0;
+  position: relative;
 }
 
 .modal-image {
@@ -719,6 +745,30 @@ body {
 
 .modal-content:hover .modal-image {
   transform: scale(1.03);
+}
+
+.modal-attribution {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 20px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 12px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.modal-attribution a {
+  color: rgba(255, 255, 255, 0.95);
+  text-decoration: underline;
+  pointer-events: auto;
+  transition: color 0.2s ease;
+}
+
+.modal-attribution a:hover {
+  color: #fff;
 }
 
 .modal-text {

@@ -777,8 +777,31 @@ function initVisitModals() {
       modalImage.style.backgroundSize = "cover";
       modalImage.style.backgroundPosition = "center";
       modalImage.className = "modal-image";
+      
+      // Add attribution if available
+      const imageContainer = modalImage.parentElement;
+      let attributionEl = imageContainer.querySelector('.modal-attribution');
+      if (data.attribution) {
+        if (!attributionEl) {
+          attributionEl = document.createElement('div');
+          attributionEl.className = 'modal-attribution';
+          imageContainer.appendChild(attributionEl);
+        }
+        attributionEl.innerHTML = `
+          <span>Photo by <a href="${data.attribution.profileUrl}" target="_blank" rel="noopener noreferrer">${data.attribution.photographer}</a> on <a href="${data.attribution.unsplashUrl}" target="_blank" rel="noopener noreferrer">Unsplash</a></span>
+        `;
+        attributionEl.style.display = 'block';
+      } else if (attributionEl) {
+        attributionEl.style.display = 'none';
+      }
     } else if (data.image) {
       modalImage.className = `modal-image ${data.image}`;
+      // Hide attribution for static images
+      const imageContainer = modalImage.parentElement;
+      const attributionEl = imageContainer.querySelector('.modal-attribution');
+      if (attributionEl) {
+        attributionEl.style.display = 'none';
+      }
     }
 
     modal.classList.add("active");
@@ -871,6 +894,7 @@ function initVisitOptionsGenerator() {
         title: option.title,
         content: option.content,
         imageUrl: option.imageUrl,
+        attribution: option.attribution,
       });
 
       // Add scroll animation
@@ -976,6 +1000,16 @@ function initVisitOptionsGenerator() {
       const title = document.createElement("h3");
       title.className = "visit-title";
       title.textContent = option.title;
+
+      // Create attribution if available
+      if (option.attribution) {
+        const attribution = document.createElement("div");
+        attribution.className = "visit-attribution";
+        attribution.innerHTML = `
+          <span>Photo by <a href="${option.attribution.profileUrl}" target="_blank" rel="noopener noreferrer">${option.attribution.photographer}</a> on <a href="${option.attribution.unsplashUrl}" target="_blank" rel="noopener noreferrer">Unsplash</a></span>
+        `;
+        imageDiv.appendChild(attribution);
+      }
 
       card.appendChild(imageDiv);
       card.appendChild(title);

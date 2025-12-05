@@ -153,7 +153,16 @@ Always include descriptive, mood-setting words (elegant, romantic, cozy, vibrant
                 if (!usedUrls.has(imageUrl)) {
                   usedUrls.add(imageUrl);
                   console.log(`Found image for "${title}": ${imageUrl}`);
-                  return imageUrl;
+                  // Return image URL and photographer attribution
+                  return {
+                    imageUrl: imageUrl,
+                    attribution: {
+                      photographer: photo.user.name,
+                      username: photo.user.username,
+                      profileUrl: `${photo.user.links.html}?utm_source=vienna-trip-website&utm_medium=referral`,
+                      unsplashUrl: `https://unsplash.com/?utm_source=vienna-trip-website&utm_medium=referral`
+                    }
+                  };
                 }
               }
               
@@ -161,7 +170,15 @@ Always include descriptive, mood-setting words (elegant, romantic, cozy, vibrant
               const photo = data.results[0];
               const imageUrl = `${photo.urls.regular}?w=800&q=80&fit=crop`;
               console.log(`Using first result for "${title}": ${imageUrl}`);
-              return imageUrl;
+              return {
+                imageUrl: imageUrl,
+                attribution: {
+                  photographer: photo.user.name,
+                  username: photo.user.username,
+                  profileUrl: `${photo.user.links.html}?utm_source=vienna-trip-website&utm_medium=referral`,
+                  unsplashUrl: `https://unsplash.com/?utm_source=vienna-trip-website&utm_medium=referral`
+                }
+              };
             } else {
               console.warn(`No Unsplash results for: ${fullSearchTerm}`);
             }
@@ -188,23 +205,53 @@ Always include descriptive, mood-setting words (elegant, romantic, cozy, vibrant
         
         // Fallback: Use Unsplash Source API (deprecated but still works)
         const encodedTerm = encodeURIComponent(fullSearchTerm);
-        return `https://source.unsplash.com/800x600/?${encodedTerm}`;
+        return {
+          imageUrl: `https://source.unsplash.com/800x600/?${encodedTerm}`,
+          attribution: {
+            photographer: 'Unsplash',
+            username: 'unsplash',
+            profileUrl: 'https://unsplash.com/?utm_source=vienna-trip-website&utm_medium=referral',
+            unsplashUrl: 'https://unsplash.com/?utm_source=vienna-trip-website&utm_medium=referral'
+          }
+        };
         
       } catch (error) {
         console.error(`Error fetching image for "${searchTerm}":`, error.message);
         // Fallback to default
-        return 'https://source.unsplash.com/800x600/?vienna,austria';
+        return {
+          imageUrl: 'https://source.unsplash.com/800x600/?vienna,austria',
+          attribution: {
+            photographer: 'Unsplash',
+            username: 'unsplash',
+            profileUrl: 'https://unsplash.com/?utm_source=vienna-trip-website&utm_medium=referral',
+            unsplashUrl: 'https://unsplash.com/?utm_source=vienna-trip-website&utm_medium=referral'
+          }
+        };
       }
     };
 
-    // Process options and add image URLs (async)
+    // Process options and add image URLs and attribution (async)
     // Process sequentially to track duplicates across all options
     const processedOptions = [];
     for (const option of options) {
       // Use imageSearchTerm if provided, otherwise use title or a default
       const searchTerm = option.imageSearchTerm || option.title || 'vienna';
       const title = option.title || searchTerm;
-      option.imageUrl = await getImageUrl(searchTerm, title, usedImageUrls);
+      const imageData = await getImageUrl(searchTerm, title, usedImageUrls);
+      
+      // Handle both old format (string) and new format (object)
+      if (typeof imageData === 'string') {
+        option.imageUrl = imageData;
+        option.attribution = {
+          photographer: 'Unsplash',
+          username: 'unsplash',
+          profileUrl: 'https://unsplash.com/?utm_source=vienna-trip-website&utm_medium=referral',
+          unsplashUrl: 'https://unsplash.com/?utm_source=vienna-trip-website&utm_medium=referral'
+        };
+      } else {
+        option.imageUrl = imageData.imageUrl;
+        option.attribution = imageData.attribution;
+      }
       
       // Remove imageSearchTerm from final output (we only need imageUrl)
       delete option.imageSearchTerm;
