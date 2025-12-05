@@ -92,7 +92,7 @@ Webpage/
    - Add the following variables:
      - `OPENWEATHER_API_KEY` - Your OpenWeatherMap API key
      - `OPENAI_API_KEY` - Your OpenAI API key (optional, for AI features)
-     - `UNSPLASH_ACCESS_KEY` - Your Unsplash access key (optional, for better images)
+     - `UNSPLASH_ACCESS_KEY` - Your Unsplash access key (optional, for better images - requires production approval for serverless functions)
    - **Important**: Make sure to add them for the correct environment:
      - **Production** - for your live site
      - **Preview** - for preview deployments
@@ -110,6 +110,18 @@ Webpage/
 - Check that you've redeployed after adding the variables
 - Variable names are case-sensitive: `OPENWEATHER_API_KEY` (all caps)
 - The API route will log debug info in development mode if keys are missing
+
+**Unsplash API Production Approval:**
+
+- Unsplash API keys start in "Demo" mode (50 requests/hour)
+- For production use with serverless functions, you need to apply for production status
+- Apply at: https://unsplash.com/developers (your app dashboard)
+- Requirements:
+  - Use image URLs from `photo.urls` properties (we do this ✅)
+  - Trigger downloads when users select images (optional for this use case)
+  - Display proper attribution (handled by Unsplash)
+- While waiting for approval, the app will automatically fall back to Unsplash Source API
+- Production approval increases rate limit to 5,000 requests/hour
 
 The `api/weather.js` serverless function will handle API routes in production.
 

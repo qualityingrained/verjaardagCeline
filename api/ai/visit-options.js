@@ -167,7 +167,20 @@ Always include descriptive, mood-setting words (elegant, romantic, cozy, vibrant
             }
           } else {
             const errorText = await response.text();
-            console.error(`Unsplash API error: ${response.status} ${response.statusText}`, errorText);
+            let errorData;
+            try {
+              errorData = JSON.parse(errorText);
+            } catch (e) {
+              errorData = { message: errorText };
+            }
+            
+            // Check for common API key rejection errors
+            if (response.status === 401 || response.status === 403) {
+              console.warn(`Unsplash API key rejected (${response.status}): ${errorData.message || 'API key may need production approval. Using fallback.'}`);
+            } else {
+              console.error(`Unsplash API error: ${response.status} ${response.statusText}`, errorData);
+            }
+            // Fall through to use fallback
           }
         } else {
           console.warn('UNSPLASH_ACCESS_KEY not set, using fallback');
