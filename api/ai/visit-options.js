@@ -1,5 +1,7 @@
 // Vercel serverless function for AI visit options generation
 const { OpenAI } = require('openai');
+const fs = require('fs').promises;
+const path = require('path');
 
 module.exports = async function handler(req, res) {
   // Set CORS headers
@@ -40,6 +42,31 @@ module.exports = async function handler(req, res) {
       });
     }
 
+    // Normalize query for cache key (lowercase, trim)
+    const normalizedQuery = query.toLowerCase().trim();
+    const cacheFilePath = path.join(process.cwd(), 'ai-cache.json');
+    
+    // Try to load cache
+    let aiCache = {};
+    try {
+      const cacheData = await fs.readFile(cacheFilePath, 'utf8');
+      aiCache = JSON.parse(cacheData);
+    } catch (error) {
+      // Cache file doesn't exist yet, start with empty cache
+      aiCache = {};
+    }
+    
+    // Check if we have a cached result for this query
+    if (aiCache[normalizedQuery]) {
+      console.log(`Cache hit for query: "${query}"`);
+      return res.status(200).json({
+        options: aiCache[normalizedQuery],
+        cached: true
+      });
+    }
+    
+    console.log(`Cache miss for query: "${query}", calling AI...`);
+
     const systemPrompt = `You are a travel assistant for Vienna, Austria. Generate visit options based on user queries.
 
 CRITICAL: Return ONLY valid JSON object with an "options" array property. No additional text, markdown, or code blocks.
@@ -56,7 +83,8 @@ IMPORTANT RULES FOR TITLES:
 Each option in the "options" array must include:
 - "id": unique identifier (lowercase, no spaces, e.g., "figlmuller-restaurant")
 - "title": CONCRETE, SPECIFIC name of an actual place in Vienna (e.g., "Figlmüller", "Loos Bar", "Café Central") - NOT generic descriptions
-- "imageSearchTerm": descriptive search term for finding images. Use the actual place name plus descriptive words (e.g., "figlmuller restaurant vienna interior", "loos bar vienna art nouveau", "cafe central vienna elegant interior", "schonbrunn palace vienna baroque architecture"). Include the actual place name when possible, plus atmosphere words like "elegant", "romantic", "cozy", "vibrant", "sophisticated", "baroque", "imperial", etc.
+- "imageSearchTerm": descriptive search term for color generation. Use the actual place name plus descriptive words (e.g., "figlmuller restaurant vienna interior", "loos bar vienna art nouveau", "cafe central vienna elegant interior", "schonbrunn palace vienna baroque architecture"). Include the actual place name when possible, plus atmosphere words like "elegant", "romantic", "cozy", "vibrant", "sophisticated", "baroque", "imperial", etc.
+- "icon": EXACT Lucide icon name in PascalCase format (e.g., "Utensils", "Coffee", "Wine", "Landmark", "Camera", "Music", "Palace", "Church", "Building", "Castle", "Theater", "ShoppingBag", "MapPin", "Sparkles", "Drumstick", "Cake", "Beer", "Cocktail", "Museum", "Monument", "Tower", "Bridge", "Park", "TreePine", "Flower", "Star", "Gem", "Crown", "Scroll", "BookOpen", "Music2", "Headphones", "Mic", "Video", "Image", "Palette", "Brush", "PenTool", "ShoppingCart", "Store", "Hotel", "Bed", "Plane", "Train", "Car", "Bike", "Footprints", "Compass", "Navigation", "Flag", "Award", "Trophy", "Gift", "Heart", "Diamond", "Zap", "Sun", "Moon", "Cloud", "Droplet", "Flame", "Leaf", "Mountain", "Waves", "Umbrella", "Sunrise", "Sunset"). Choose the icon that best represents the specific place or experience. CRITICAL: Each option MUST use a DIFFERENT icon - no duplicates allowed across all options in the response.
 - "description": brief description mentioning what makes this specific place special (1-2 sentences, max 100 characters)
 - "content": detailed HTML content for the modal popup including:
   * An introduction paragraph about this SPECIFIC place
@@ -67,7 +95,7 @@ Each option in the "options" array must include:
 
 Limit to 6-8 options maximum. Focus on Vienna attractions, activities, restaurants, bars, cafes, or experiences related to the query. Always use REAL, SPECIFIC place names.
 
-DO NOT include imageUrl in your response. Only provide imageSearchTerm. The system will automatically fetch real images based on the search term.
+IMPORTANT: We use Lucide Icons (https://lucide.dev). Return the exact icon name in PascalCase. Ensure every option has a UNIQUE icon - check your response to avoid duplicates.
 
 Example JSON format:
 {
@@ -76,6 +104,7 @@ Example JSON format:
       "id": "example-1",
       "title": "Example Title",
       "imageSearchTerm": "vienna opera house exterior",
+      "icon": "Theater",
       "description": "Brief description here",
       "content": "<h4>Introduction</h4><p>Detailed intro...</p><h4>What to See</h4><ul><li><strong>Item:</strong> Description</li></ul><h4>Best Time to Visit</h4><p>When to go...</p><h4>Tips</h4><p>Helpful tips...</p>"
     }
@@ -93,6 +122,10 @@ CRITICAL REQUIREMENTS:
 2. For imageSearchTerm: Use the actual place name + descriptive words
    - Examples: "figlmuller restaurant vienna", "loos bar vienna art nouveau", "cafe central vienna elegant"
    - Include atmosphere words: elegant, romantic, cozy, vibrant, sophisticated, baroque, imperial, etc.
+3. For icon: Choose a UNIQUE Lucide icon name (PascalCase) that best represents each specific place
+   - Examples: "Utensils" for restaurants, "Coffee" for cafes, "Wine" or "Cocktail" for bars, "Palace" or "Landmark" for attractions
+   - CRITICAL: Each option MUST have a DIFFERENT icon - verify no duplicates in your response
+   - Browse available icons at https://lucide.dev/icons/ if needed
 
 Focus on well-known, real establishments and attractions in Vienna. Research actual names if needed.`;
 
@@ -128,171 +161,35 @@ Focus on well-known, real establishments and attractions in Vienna. Research act
       throw new Error('Invalid response format: expected options array');
     }
 
-    // Track used image URLs to prevent duplicates
-    const usedImageUrls = new Set();
-    
-    // Function to get image URL from search term using Unsplash Search API
-    const getImageUrl = async (searchTerm, title, usedUrls) => {
-      if (!searchTerm) {
-        searchTerm = 'vienna austria';
-      }
-      
-      // Add "vienna" to search term for better results if not already present
-      const fullSearchTerm = searchTerm.toLowerCase().includes('vienna') 
-        ? searchTerm 
-        : `${searchTerm} vienna`;
-      
-      try {
-        // Use Unsplash Search API (requires access key)
-        const unsplashAccessKey = process.env.UNSPLASH_ACCESS_KEY;
-        
-        if (unsplashAccessKey) {
-          // Fetch multiple results to have options if duplicates occur
-          const encodedTerm = encodeURIComponent(fullSearchTerm);
-          const apiUrl = `https://api.unsplash.com/search/photos?query=${encodedTerm}&per_page=10&orientation=landscape&client_id=${unsplashAccessKey}`;
-          
-          console.log(`Fetching Unsplash image for: ${fullSearchTerm}`);
-          
-          const response = await fetch(apiUrl);
-          
-          if (response.ok) {
-            const data = await response.json();
-            if (data.results && data.results.length > 0) {
-              // Find the first image that hasn't been used yet
-              for (const photo of data.results) {
-                const imageUrl = `${photo.urls.regular}?w=800&q=80&fit=crop`;
-                if (!usedUrls.has(imageUrl)) {
-                  usedUrls.add(imageUrl);
-                  console.log(`Found image for "${title}": ${imageUrl}`);
-                  // Return image URL and photographer attribution
-                  const photographerName = photo.user?.name || photo.user?.username || 'Unsplash';
-                  const photographerUsername = photo.user?.username || 'unsplash';
-                  const photographerProfileUrl = photo.user?.links?.html 
-                    ? `${photo.user.links.html}?utm_source=vienna-trip-website&utm_medium=referral`
-                    : `https://unsplash.com/@${photographerUsername}?utm_source=vienna-trip-website&utm_medium=referral`;
-                  
-                  console.log(`Photographer info for "${title}":`, {
-                    name: photographerName,
-                    username: photographerUsername,
-                    profileUrl: photographerProfileUrl
-                  });
-                  
-                  return {
-                    imageUrl: imageUrl,
-                    attribution: {
-                      photographer: photographerName,
-                      username: photographerUsername,
-                      profileUrl: photographerProfileUrl,
-                      unsplashUrl: 'https://unsplash.com/?utm_source=vienna-trip-website&utm_medium=referral'
-                    }
-                  };
-                }
-              }
-              
-              // If all results are duplicates, use the first one anyway
-              const photo = data.results[0];
-              const imageUrl = `${photo.urls.regular}?w=800&q=80&fit=crop`;
-              console.log(`Using first result for "${title}": ${imageUrl}`);
-              
-              const photographerName = photo.user?.name || photo.user?.username || 'Unsplash';
-              const photographerUsername = photo.user?.username || 'unsplash';
-              const photographerProfileUrl = photo.user?.links?.html 
-                ? `${photo.user.links.html}?utm_source=vienna-trip-website&utm_medium=referral`
-                : `https://unsplash.com/@${photographerUsername}?utm_source=vienna-trip-website&utm_medium=referral`;
-              
-              return {
-                imageUrl: imageUrl,
-                attribution: {
-                  photographer: photographerName,
-                  username: photographerUsername,
-                  profileUrl: photographerProfileUrl,
-                  unsplashUrl: 'https://unsplash.com/?utm_source=vienna-trip-website&utm_medium=referral'
-                }
-              };
-            } else {
-              console.warn(`No Unsplash results for: ${fullSearchTerm}`);
-            }
-          } else {
-            const errorText = await response.text();
-            let errorData;
-            try {
-              errorData = JSON.parse(errorText);
-            } catch (e) {
-              errorData = { message: errorText };
-            }
-            
-            // Check for common API key rejection errors
-            if (response.status === 401 || response.status === 403) {
-              console.warn(`Unsplash API key rejected (${response.status}): ${errorData.message || 'API key may need production approval. Using fallback.'}`);
-            } else {
-              console.error(`Unsplash API error: ${response.status} ${response.statusText}`, errorData);
-            }
-            // Fall through to use fallback
-          }
-        } else {
-          console.warn('UNSPLASH_ACCESS_KEY not set, using fallback');
-        }
-        
-        // Fallback: Use Unsplash Source API (deprecated but still works)
-        const encodedTerm = encodeURIComponent(fullSearchTerm);
-        return {
-          imageUrl: `https://source.unsplash.com/800x600/?${encodedTerm}`,
-          attribution: {
-            photographer: 'Unsplash',
-            username: 'unsplash',
-            profileUrl: 'https://unsplash.com/?utm_source=vienna-trip-website&utm_medium=referral',
-            unsplashUrl: 'https://unsplash.com/?utm_source=vienna-trip-website&utm_medium=referral'
-          }
-        };
-        
-      } catch (error) {
-        console.error(`Error fetching image for "${searchTerm}":`, error.message);
-        // Fallback to default
-        return {
-          imageUrl: 'https://source.unsplash.com/800x600/?vienna,austria',
-          attribution: {
-            photographer: 'Unsplash',
-            username: 'unsplash',
-            profileUrl: 'https://unsplash.com/?utm_source=vienna-trip-website&utm_medium=referral',
-            unsplashUrl: 'https://unsplash.com/?utm_source=vienna-trip-website&utm_medium=referral'
-          }
-        };
-      }
-    };
-
-    // Process options and add image URLs and attribution (async)
-    // Process sequentially to track duplicates across all options
+    // Process options - ensure icon is present, keep imageSearchTerm for color generation
     const processedOptions = [];
     for (const option of options) {
-      // Use imageSearchTerm if provided, otherwise use title or a default
-      const searchTerm = option.imageSearchTerm || option.title || 'vienna';
-      const title = option.title || searchTerm;
-      const imageData = await getImageUrl(searchTerm, title, usedImageUrls);
-      
-      // Handle both old format (string) and new format (object)
-      if (typeof imageData === 'string') {
-        option.imageUrl = imageData;
-        option.attribution = {
-          photographer: 'Unsplash',
-          username: 'unsplash',
-          profileUrl: 'https://unsplash.com/?utm_source=vienna-trip-website&utm_medium=referral',
-          unsplashUrl: 'https://unsplash.com/?utm_source=vienna-trip-website&utm_medium=referral'
-        };
-      } else {
-        option.imageUrl = imageData.imageUrl;
-        option.attribution = imageData.attribution;
+      // Ensure icon is present, default to MapPin if missing
+      if (!option.icon) {
+        option.icon = 'MapPin';
       }
       
-      // Remove imageSearchTerm from final output (we only need imageUrl)
-      delete option.imageSearchTerm;
+      // Keep imageSearchTerm for client-side color generation
+      // No need to fetch images anymore
       
       processedOptions.push(option);
     }
     
     options = processedOptions;
 
+    // Save to cache
+    try {
+      aiCache[normalizedQuery] = options;
+      await fs.writeFile(cacheFilePath, JSON.stringify(aiCache, null, 2), 'utf8');
+      console.log(`Cached result for query: "${query}"`);
+    } catch (error) {
+      // Cache write failed (e.g., on Vercel), but continue with response
+      console.warn('Failed to save AI cache:', error.message);
+    }
+
     return res.status(200).json({
-      options: options
+      options: options,
+      cached: false
     });
     
   } catch (error) {

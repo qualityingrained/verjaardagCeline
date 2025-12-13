@@ -771,69 +771,75 @@ function initVisitModals() {
     modalTitle.textContent = data.title;
     modalBody.innerHTML = data.content;
 
-    // Handle image - either from class or URL
-    if (data.imageUrl) {
-      modalImage.style.backgroundImage = `url('${data.imageUrl}')`;
-      modalImage.style.backgroundSize = "cover";
-      modalImage.style.backgroundPosition = "center";
-      modalImage.className = "modal-image";
-
-      // Add attribution if available
-      const imageContainer = modalImage.parentElement;
-      let attributionEl = imageContainer.querySelector(".modal-attribution");
-      
-      // Check if image is from Unsplash
-      const isUnsplashImage = data.imageUrl && (
-        data.imageUrl.includes('unsplash.com') || 
-        data.imageUrl.includes('source.unsplash.com')
-      );
-      
-      // Handle attribution - could be object or string (from JSON parsing)
-      let attribution = data.attribution;
-      if (typeof attribution === 'string') {
-        try {
-          attribution = JSON.parse(attribution);
-        } catch (e) {
-          attribution = null;
-        }
+    // Reset modal image
+    modalImage.className = "modal-image";
+    modalImage.innerHTML = "";
+    
+    // Clear all background styles first
+    modalImage.style.background = '';
+    modalImage.style.backgroundImage = '';
+    modalImage.style.backgroundSize = '';
+    modalImage.style.backgroundPosition = '';
+    modalImage.style.backgroundRepeat = '';
+    
+    // Generate gradient from imageSearchTerm or title (for static options)
+    const searchTerm = data.imageSearchTerm || data.title || 'vienna';
+    const palette = getGradientPalette(searchTerm);
+    const gradientStyle = createGradientFromPalette(palette);
+    
+    // Apply gradient using new function
+    applyGradientToElement(modalImage, gradientStyle);
+    
+    // Add icon container
+    const iconContainer = document.createElement("div");
+    iconContainer.className = "modal-icon-container";
+    modalImage.appendChild(iconContainer);
+    
+    // Determine icon - use provided icon or generate from title for static options
+    let iconName = data.icon;
+    if (!iconName) {
+      // Generate icon based on title for static options
+      const titleLower = (data.title || '').toLowerCase();
+      if (titleLower.includes('palace') || titleLower.includes('schönbrunn') || titleLower.includes('hofburg') || titleLower.includes('belvedere')) {
+        iconName = 'Palace';
+      } else if (titleLower.includes('cathedral') || titleLower.includes('church') || titleLower.includes('st. stephen')) {
+        iconName = 'Church';
+      } else if (titleLower.includes('opera') || titleLower.includes('theater')) {
+        iconName = 'Theater';
+      } else if (titleLower.includes('café') || titleLower.includes('cafe') || titleLower.includes('coffee')) {
+        iconName = 'Coffee';
+      } else if (titleLower.includes('market') || titleLower.includes('naschmarkt')) {
+        iconName = 'ShoppingBag';
+      } else if (titleLower.includes('park') || titleLower.includes('prater')) {
+        iconName = 'Park';
+      } else if (titleLower.includes('tower') || titleLower.includes('danube')) {
+        iconName = 'Tower';
+      } else if (titleLower.includes('museum') || titleLower.includes('quarter')) {
+        iconName = 'Museum';
+      } else if (titleLower.includes('ringstrasse') || titleLower.includes('boulevard')) {
+        iconName = 'Map';
+      } else if (titleLower.includes('graben') || titleLower.includes('shopping')) {
+        iconName = 'ShoppingBag';
+      } else {
+        iconName = 'MapPin';
       }
+    }
+    
+    // Render icon after container is in DOM
+    requestAnimationFrame(() => {
+      renderLucideIcon(iconName, iconContainer, 80);
       
-      if (attribution && attribution.photographer) {
-        if (!attributionEl) {
-          attributionEl = document.createElement("div");
-          attributionEl.className = "modal-attribution";
-          imageContainer.appendChild(attributionEl);
-        }
-        const profileUrl = attribution.profileUrl || `https://unsplash.com/@${attribution.username || 'unsplash'}?utm_source=vienna-trip-website&utm_medium=referral`;
-        const unsplashUrl = attribution.unsplashUrl || 'https://unsplash.com/?utm_source=vienna-trip-website&utm_medium=referral';
-        attributionEl.innerHTML = `
-          <span>Photo by <a href="${profileUrl}" target="_blank" rel="noopener noreferrer">${attribution.photographer}</a> on <a href="${unsplashUrl}" target="_blank" rel="noopener noreferrer">Unsplash</a></span>
-        `;
-        attributionEl.style.display = "block";
-        console.log('Modal attribution set:', attribution);
-      } else if (isUnsplashImage) {
-        // Fallback attribution for Unsplash images without attribution data
-        if (!attributionEl) {
-          attributionEl = document.createElement("div");
-          attributionEl.className = "modal-attribution";
-          imageContainer.appendChild(attributionEl);
-        }
-        attributionEl.innerHTML = `
-          <span>Photo on <a href="https://unsplash.com/?utm_source=vienna-trip-website&utm_medium=referral" target="_blank" rel="noopener noreferrer">Unsplash</a></span>
-        `;
-        attributionEl.style.display = "block";
-        console.log('Modal fallback attribution set for Unsplash image');
-      } else if (attributionEl) {
-        attributionEl.style.display = "none";
-      }
-    } else if (data.image) {
-      modalImage.className = `modal-image ${data.image}`;
-      // Hide attribution for static images
-      const imageContainer = modalImage.parentElement;
-      const attributionEl = imageContainer.querySelector(".modal-attribution");
-      if (attributionEl) {
-        attributionEl.style.display = "none";
-      }
+      // Re-initialize Lucide icons after a short delay to ensure DOM is ready
+      setTimeout(() => {
+        reinitializeLucideIcons();
+      }, 200);
+    });
+    
+    // Hide any attribution elements
+    const imageContainer = modalImage.parentElement;
+    const attributionEl = imageContainer.querySelector(".modal-attribution");
+    if (attributionEl) {
+      attributionEl.style.display = "none";
     }
 
     modal.classList.add("active");
@@ -877,6 +883,362 @@ function initVisitModals() {
       closeModal();
     }
   });
+}
+
+// Predefined beautiful gradient palettes
+const GRADIENT_PALETTES = [
+  // Purple/Blue gradients
+  ['#667eea', '#764ba2'],
+  ['#f093fb', '#f5576c'],
+  ['#4facfe', '#00f2fe'],
+  ['#43e97b', '#38f9d7'],
+  ['#fa709a', '#fee140'],
+  ['#30cfd0', '#330867'],
+  ['#a8edea', '#fed6e3'],
+  ['#ff9a9e', '#fecfef'],
+  ['#ffecd2', '#fcb69f'],
+  ['#ff8a80', '#ea4c89'],
+  // Blue/Purple gradients
+  ['#667eea', '#764ba2', '#f093fb'],
+  ['#4facfe', '#00f2fe', '#43e97b'],
+  ['#30cfd0', '#330867', '#667eea'],
+  // Warm gradients
+  ['#fa709a', '#fee140', '#ff8a80'],
+  ['#ffecd2', '#fcb69f', '#ff9a9e'],
+  ['#ff6b6b', '#ee5a6f', '#c44569'],
+  // Cool gradients
+  ['#a8edea', '#fed6e3', '#d299c2'],
+  ['#89f7fe', '#66a6ff', '#4facfe'],
+  ['#30cfd0', '#330867', '#667eea'],
+  // Vibrant gradients
+  ['#f093fb', '#f5576c', '#4facfe'],
+  ['#43e97b', '#38f9d7', '#667eea'],
+  ['#fa709a', '#fee140', '#ff8a80'],
+  // Deep gradients
+  ['#330867', '#667eea', '#764ba2'],
+  ['#1e3c72', '#2a5298', '#7e8ba3'],
+  ['#0f2027', '#203a43', '#2c5364'],
+  // Bright gradients
+  ['#ff9a9e', '#fecfef', '#fecfef'],
+  ['#a8edea', '#fed6e3', '#d299c2'],
+  ['#ffecd2', '#fcb69f', '#ff9a9e']
+];
+
+// Hash function to consistently map terms to palette indices
+function hashString(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  return Math.abs(hash);
+}
+
+// Get gradient palette for a search term
+function getGradientPalette(searchTerm) {
+  if (!searchTerm) searchTerm = 'vienna';
+  const normalizedTerm = searchTerm.toLowerCase().trim();
+  const hash = hashString(normalizedTerm);
+  const paletteIndex = hash % GRADIENT_PALETTES.length;
+  return GRADIENT_PALETTES[paletteIndex];
+}
+
+// Create gradient CSS string from palette
+function createGradientFromPalette(palette) {
+  if (!palette || palette.length === 0) {
+    palette = GRADIENT_PALETTES[0];
+  }
+  
+  const color1 = palette[0];
+  const color2 = palette[1] || palette[0];
+  const color3 = palette[2] || palette[1] || palette[0];
+  
+  // Create diagonal gradient with multiple color stops
+  if (palette.length === 2) {
+    return `linear-gradient(135deg, ${color1} 0%, ${color2} 100%)`;
+  } else {
+    return `linear-gradient(135deg, ${color1} 0%, ${color2} 50%, ${color3} 100%)`;
+  }
+}
+
+// Apply gradient to element using a dedicated gradient layer
+function applyGradientToElement(element, gradientStyle) {
+  if (!element || !gradientStyle) {
+    console.warn('applyGradientToElement: Missing element or gradientStyle', { element, gradientStyle });
+    return;
+  }
+  
+  // Remove any old CSS classes that might set background images
+  element.classList.remove('visit-1', 'visit-2', 'visit-3', 'visit-4', 'visit-5', 'visit-6', 
+                           'visit-7', 'visit-8', 'visit-9', 'visit-10', 'visit-11', 'visit-12');
+  
+  // Ensure element has position relative and proper display
+  element.style.position = 'relative';
+  element.style.overflow = 'hidden';
+  
+  // Remove any existing gradient layer
+  const existingGradient = element.querySelector('.gradient-layer');
+  if (existingGradient) {
+    existingGradient.remove();
+  }
+  
+  // Create a dedicated gradient layer div
+  const gradientLayer = document.createElement('div');
+  gradientLayer.className = 'gradient-layer';
+  
+  // Set position and layout styles first
+  gradientLayer.style.position = 'absolute';
+  gradientLayer.style.top = '0';
+  gradientLayer.style.left = '0';
+  gradientLayer.style.width = '100%';
+  gradientLayer.style.height = '100%';
+  gradientLayer.style.zIndex = '0';
+  gradientLayer.style.pointerEvents = 'none';
+  gradientLayer.style.opacity = '1';
+  gradientLayer.style.visibility = 'visible';
+  
+  // Set background as a single combined value - this is critical!
+  // Do NOT override backgroundImage afterwards, otherwise the gradient disappears
+  gradientLayer.style.background = `${gradientStyle} center / cover no-repeat`;
+  
+  // Insert gradient layer as first child (behind all other content)
+  if (element.firstChild) {
+    element.insertBefore(gradientLayer, element.firstChild);
+  } else {
+    element.appendChild(gradientLayer);
+  }
+  
+  // Set CSS custom property for potential CSS use
+  element.style.setProperty('--gradient-bg', gradientStyle);
+  
+  // Set background as a single combined value - this is critical!
+  // Do NOT override backgroundImage afterwards, otherwise the gradient disappears
+  element.style.background = `${gradientStyle} center / cover no-repeat`;
+  
+  // Mark element as having gradient
+  element.classList.add('has-gradient');
+  
+  // Debug: log gradient application
+  console.log('Applied gradient:', gradientStyle, 'to element:', element);
+  
+  // Verify the gradient layer was created and visible
+  setTimeout(() => {
+    const verifyLayer = element.querySelector('.gradient-layer');
+    if (!verifyLayer) {
+      console.error('ERROR: Gradient layer was not created!', element);
+    } else {
+      const computedStyle = window.getComputedStyle(verifyLayer);
+      const elementStyle = window.getComputedStyle(element);
+      console.log('Gradient verification:', {
+        layerExists: true,
+        layerBackground: computedStyle.background,
+        layerDisplay: computedStyle.display,
+        layerVisibility: computedStyle.visibility,
+        layerOpacity: computedStyle.opacity,
+        layerZIndex: computedStyle.zIndex,
+        layerWidth: computedStyle.width,
+        layerHeight: computedStyle.height,
+        elementBackground: elementStyle.background,
+        elementBackgroundImage: elementStyle.backgroundImage
+      });
+    }
+  }, 50);
+}
+
+// Map our icon names to valid Lucide icon names
+const LUCIDE_ICON_MAP = {
+  'Palace': 'Building2',
+  'Park': 'Trees',
+  'Museum': 'Building',
+  'ShoppingBag': 'ShoppingBag',
+  'Tower': 'TowerControl',
+  'Dance': 'Music',
+  'Cocktail': 'Wine',
+  'Church': 'Church',
+  'Theater': 'Theater',
+  'Coffee': 'Coffee',
+  'Map': 'Map',
+  'MapPin': 'MapPin',
+  'Music': 'Music',
+  'Building': 'Building',
+  'Star': 'Star',
+  'Heart': 'Heart'
+};
+
+// Render Lucide Icon - improved version with direct SVG creation
+function renderLucideIcon(iconName, container, size = 64) {
+  if (!iconName || !container) {
+    console.warn('renderLucideIcon: Missing iconName or container', { iconName, container });
+    return;
+  }
+  
+  // Default fallback icon
+  const fallbackIcon = 'MapPin';
+  
+  // Clean and validate icon name, then map to valid Lucide name
+  let cleanIconName = String(iconName).trim();
+  if (!cleanIconName) {
+    cleanIconName = fallbackIcon;
+  }
+  
+  // Map to valid Lucide icon name if needed
+  const lucideIconName = LUCIDE_ICON_MAP[cleanIconName] || cleanIconName;
+  
+  // Normalize to kebab-case for data-lucide and PascalCase for direct lookup
+  const kebabName = String(lucideIconName)
+    .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+    .replace(/\s+/g, '-')
+    .toLowerCase();
+  const pascalName = kebabName
+    .split('-')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join('');
+  
+  try {
+    // Clear container first
+    container.innerHTML = '';
+    
+    // Function to create icon using Lucide
+    const createIconWithLucide = () => {
+      if (typeof lucide === 'undefined') {
+        return false;
+      }
+      
+      try {
+        // Method 1: Try to get icon directly from Lucide icons object
+        if (lucide.icons && lucide.icons[pascalName]) {
+          const icon = lucide.icons[pascalName];
+          if (icon && typeof icon.toSvg === 'function') {
+            const svgString = icon.toSvg({
+              width: size,
+              height: size,
+              stroke: 'rgba(255, 255, 255, 0.95)',
+              'stroke-width': '2',
+              color: 'rgba(255, 255, 255, 0.95)'
+            });
+            container.innerHTML = svgString;
+            return true;
+          }
+        }
+        
+        // Method 2: Try createIcon function if available
+        if (lucide.createIcon && typeof lucide.createIcon === 'function') {
+          try {
+            const iconElement = lucide.createIcon(pascalName, {
+              width: size,
+              height: size,
+              stroke: 'rgba(255, 255, 255, 0.95)',
+              'stroke-width': '2'
+            });
+            if (iconElement) {
+              container.appendChild(iconElement);
+              return true;
+            }
+          } catch (e) {
+            // Continue to next method
+          }
+        }
+        
+        // Method 3: Use createIcons API with data-lucide attribute
+        if (lucide.createIcons) {
+          const iconElement = document.createElement('i');
+          iconElement.setAttribute('data-lucide', kebabName);
+          iconElement.style.width = `${size}px`;
+          iconElement.style.height = `${size}px`;
+          container.appendChild(iconElement);
+          
+          // Create icons immediately
+          lucide.createIcons();
+          
+          // Check if it was converted to SVG after a short delay
+          setTimeout(() => {
+            const svg = container.querySelector('svg');
+            if (!svg) {
+              // Not converted, use fallback SVG with original icon name
+              container.innerHTML = createFallbackSVG(cleanIconName, size);
+            }
+          }, 150);
+          return true;
+        }
+      } catch (e) {
+        console.warn(`Error creating icon ${lucideIconName} with Lucide:`, e);
+        return false;
+      }
+      return false;
+    };
+    
+    // Try to create icon immediately
+    let iconCreated = createIconWithLucide();
+    
+    // If Lucide not available or icon not found, use fallback SVG immediately
+    if (!iconCreated) {
+      // Use fallback SVG immediately so icon always shows
+      container.innerHTML = createFallbackSVG(cleanIconName, size);
+      
+      // Then try to replace with Lucide icon if it loads later
+      const retryCreate = (attempts = 0) => {
+        if (attempts > 2) {
+          return; // Keep fallback SVG
+        }
+        
+        setTimeout(() => {
+          if (typeof lucide !== 'undefined') {
+            const wasCreated = createIconWithLucide();
+            // If successful, it will replace the fallback
+            if (!wasCreated) {
+              retryCreate(attempts + 1);
+            }
+          } else {
+            retryCreate(attempts + 1);
+          }
+        }, 300);
+      };
+      
+      retryCreate();
+    } else {
+      // Icon was created, but verify it actually rendered
+      setTimeout(() => {
+        const svg = container.querySelector('svg');
+        const i = container.querySelector('i[data-lucide]');
+        // If we still have an <i> tag and no SVG, use fallback
+        if (i && !svg) {
+          container.innerHTML = createFallbackSVG(cleanIconName, size);
+        }
+      }, 200);
+    }
+  } catch (error) {
+    console.warn(`Failed to render icon ${cleanIconName}:`, error);
+    container.innerHTML = createFallbackSVG(cleanIconName, size);
+  }
+}
+
+// Create a simple fallback SVG icon
+function createFallbackSVG(iconName, size) {
+  // Simple geometric shapes as fallback
+  const stroke = 'rgba(255, 255, 255, 0.95)';
+  const strokeWidth = '2';
+  
+  // Map common icon names to simple SVG shapes
+  const iconShapes = {
+    'MapPin': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${stroke}" stroke-width="${strokeWidth}"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>`,
+    'Palace': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${stroke}" stroke-width="${strokeWidth}"><rect x="4" y="2" width="16" height="20" rx="2"></rect><path d="M9 22v-4h6v4"></path><path d="M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M12 18h.01"></path></svg>`,
+    'Church': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${stroke}" stroke-width="${strokeWidth}"><path d="M18 22h-5a2 2 0 0 1-2-2v-6a2 2 0 0 1-2-2H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path><path d="M14 22V12a2 2 0 0 0-2-2H4"></path><path d="M18 12v10h4V10a2 2 0 0 0-2-2h-2v4Z"></path><path d="M12 6V2"></path><path d="M10 6h4"></path></svg>`,
+    'Theater': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${stroke}" stroke-width="${strokeWidth}"><rect x="2" y="6" width="20" height="14" rx="2"></rect><path d="M12 6V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v2"></path><path d="M12 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path><path d="M7 10h10"></path></svg>`,
+    'Coffee': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${stroke}" stroke-width="${strokeWidth}"><path d="M17 8h1a4 4 0 1 1 0 8h-1"></path><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"></path><line x1="6" y1="2" x2="6" y2="4"></line><line x1="10" y1="2" x2="10" y2="4"></line><line x1="14" y1="2" x2="14" y2="4"></line></svg>`,
+    'ShoppingBag': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${stroke}" stroke-width="${strokeWidth}"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>`,
+    'Park': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${stroke}" stroke-width="${strokeWidth}"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>`,
+    'Museum': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${stroke}" stroke-width="${strokeWidth}"><rect x="2" y="3" width="20" height="18" rx="2"></rect><path d="M7 3v18"></path><path d="M17 3v18"></path><path d="M2 12h20"></path></svg>`,
+    'Tower': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${stroke}" stroke-width="${strokeWidth}"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>`,
+    'Map': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${stroke}" stroke-width="${strokeWidth}"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"></polygon><line x1="9" y1="3" x2="9" y2="18"></line><line x1="15" y1="6" x2="15" y2="21"></line></svg>`,
+    'Music': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${stroke}" stroke-width="${strokeWidth}"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>`,
+    'Cocktail': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${stroke}" stroke-width="${strokeWidth}"><path d="M8 22h8"></path><path d="M12 11v11"></path><path d="M19 5l-7 7-7-7a5 5 0 0 1 7-7l7 7a5 5 0 0 1-7 7Z"></path></svg>`,
+    'Building': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${stroke}" stroke-width="${strokeWidth}"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><rect x="9" y="6" width="6" height="4"></rect><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"></path></svg>`,
+    'Star': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${stroke}" stroke-width="${strokeWidth}"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`,
+    'Heart': `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="${stroke}" stroke-width="${strokeWidth}"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"></path></svg>`
+  };
+  
+  return iconShapes[iconName] || iconShapes['MapPin'];
 }
 
 // AI Visit Options Generator
@@ -925,148 +1287,45 @@ function initVisitOptionsGenerator() {
       card.dataset.modalData = JSON.stringify({
         title: option.title,
         content: option.content,
-        imageUrl: option.imageUrl,
-        attribution: option.attribution,
+        imageSearchTerm: option.imageSearchTerm,
+        icon: option.icon,
       });
 
       // Add scroll animation
       card.setAttribute("data-scroll", "");
 
-      // Create image element
+      // Create image element with gradient background
       const imageDiv = document.createElement("div");
       imageDiv.className = "visit-image";
 
-      // Function to fix and validate image URL - comprehensive client-side fix
-      function fixImageUrl(url) {
-        if (!url) return null;
-
-        let imageUrl = String(url).trim();
-
-        // Remove quotes if present
-        imageUrl = imageUrl.replace(/^["']|["']$/g, "");
-
-        // If it's already a valid absolute URL, just ensure parameters
-        if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
-          if (imageUrl.includes("unsplash.com") && !imageUrl.includes("w=")) {
-            imageUrl = imageUrl.includes("?")
-              ? `${imageUrl}&w=800&q=80&fit=crop`
-              : `${imageUrl}?w=800&q=80&fit=crop`;
-          } else if (
-            imageUrl.includes("pexels.com") &&
-            !imageUrl.includes("?")
-          ) {
-            imageUrl = `${imageUrl}?auto=compress&cs=tinysrgb&w=800`;
-          }
-          return imageUrl;
-        }
-
-        // Case 1: Just numbers and hash pattern (e.g., "1571680267315-6b4f1f89e5bb")
-        if (imageUrl.match(/^\d+-[a-z0-9]+$/i)) {
-          return `https://images.unsplash.com/photo-${imageUrl}?w=800&q=80&fit=crop`;
-        }
-
-        // Case 2: Has "photo-" prefix but no domain
-        if (imageUrl.startsWith("photo-")) {
-          return `https://images.unsplash.com/${imageUrl}?w=800&q=80&fit=crop`;
-        }
-
-        // Case 3: Pexels filename pattern
-        if (
-          imageUrl.includes("pexels-photo") ||
-          imageUrl.endsWith(".jpeg") ||
-          imageUrl.endsWith(".jpg")
-        ) {
-          const photoIdMatch = imageUrl.match(/(\d+)/);
-          if (photoIdMatch) {
-            const photoId = photoIdMatch[1];
-            return `https://images.pexels.com/photos/${photoId}/pexels-photo-${photoId}.jpeg?auto=compress&cs=tinysrgb&w=800`;
-          }
-        }
-
-        // Case 4: Has leading slash
-        if (imageUrl.startsWith("/photo-")) {
-          return `https://images.unsplash.com${imageUrl}?w=800&q=80&fit=crop`;
-        }
-
-        // Case 5: Try to match any photo ID pattern
-        const photoIdMatch = imageUrl.match(/(?:photo-)?(\d+-[a-z0-9]+)/i);
-        if (photoIdMatch) {
-          return `https://images.unsplash.com/photo-${photoIdMatch[1]}?w=800&q=80&fit=crop`;
-        }
-
-        // Can't fix, return null for fallback
-        console.warn("Could not fix image URL:", url);
-        return null;
-      }
-
-      const fixedUrl = fixImageUrl(option.imageUrl);
-
-      if (
-        fixedUrl &&
-        (fixedUrl.startsWith("http://") || fixedUrl.startsWith("https://"))
-      ) {
-        // Set background image with absolute URL
-        imageDiv.style.backgroundImage = `url("${fixedUrl}")`;
-        imageDiv.style.backgroundSize = "cover";
-        imageDiv.style.backgroundPosition = "center";
-
-        // Preload and validate image
-        const img = new Image();
-        img.onerror = function () {
-          // Fallback to gradient if image fails to load
-          imageDiv.style.backgroundImage = "none";
-          imageDiv.style.background = "var(--dark-gradient)";
-        };
-        img.onload = function () {
-          // Image loaded successfully
-          imageDiv.style.backgroundImage = `url("${fixedUrl}")`;
-        };
-        img.src = fixedUrl;
-      } else {
-        // Fallback gradient if URL can't be fixed
-        imageDiv.style.background = "var(--dark-gradient)";
-        imageDiv.style.backgroundImage = "none";
-      }
+      // Generate gradient from imageSearchTerm using palette system
+      const searchTerm = option.imageSearchTerm || option.title || 'vienna';
+      const palette = getGradientPalette(searchTerm);
+      const gradientStyle = createGradientFromPalette(palette);
+      
+      // Add icon container FIRST (before gradient layer)
+      const iconContainer = document.createElement("div");
+      iconContainer.className = "visit-icon-container";
+      const iconName = option.icon || 'MapPin';
+      imageDiv.appendChild(iconContainer);
+      
+      // Apply gradient AFTER icon container is added (gradient layer will be inserted as first child)
+      applyGradientToElement(imageDiv, gradientStyle);
+      
+      // Render icon after container is in DOM, then re-initialize Lucide
+      setTimeout(() => {
+        renderLucideIcon(iconName, iconContainer, 64);
+        
+        // Re-initialize Lucide icons after a delay to ensure DOM is ready
+        setTimeout(() => {
+          reinitializeLucideIcons();
+        }, 200);
+      }, index * 50 + 100);
 
       // Create title
       const title = document.createElement("h3");
       title.className = "visit-title";
       title.textContent = option.title;
-
-      // Create attribution if available
-      // Check if imageUrl is from Unsplash (always show attribution for Unsplash images)
-      const isUnsplashImage =
-        fixedUrl &&
-        (fixedUrl.includes("unsplash.com") ||
-          fixedUrl.includes("source.unsplash.com"));
-
-      if (option.attribution && option.attribution.photographer) {
-        const attribution = document.createElement("div");
-        attribution.className = "visit-attribution";
-        attribution.innerHTML = `
-          <span>Photo by <a href="${
-            option.attribution.profileUrl || "https://unsplash.com/"
-          }" target="_blank" rel="noopener noreferrer">${
-          option.attribution.photographer
-        }</a> on <a href="${
-          option.attribution.unsplashUrl || "https://unsplash.com/"
-        }" target="_blank" rel="noopener noreferrer">Unsplash</a></span>
-        `;
-        imageDiv.appendChild(attribution);
-        console.log("Added attribution for:", option.title, option.attribution);
-      } else if (isUnsplashImage) {
-        // Fallback attribution for Unsplash images without attribution data
-        const attribution = document.createElement("div");
-        attribution.className = "visit-attribution";
-        attribution.innerHTML = `
-          <span>Photo on <a href="https://unsplash.com/?utm_source=vienna-trip-website&utm_medium=referral" target="_blank" rel="noopener noreferrer">Unsplash</a></span>
-        `;
-        imageDiv.appendChild(attribution);
-        console.log(
-          "Added fallback attribution for Unsplash image:",
-          option.title
-        );
-      }
 
       card.appendChild(imageDiv);
       card.appendChild(title);
@@ -1169,8 +1428,8 @@ function initVisitOptionsGenerator() {
     );
     defaultOptions.forEach((option) => observer.observe(option));
 
-    // Reload default images
-    await loadDefaultImages();
+    // Re-initialize default cards with gradients and icons
+    initializeDefaultCards();
   });
 }
 
@@ -1524,38 +1783,72 @@ function formatDate(date) {
   });
 }
 
-// Load default visit option images from cache
-async function loadDefaultImages() {
-  try {
-    const isLocalhost =
-      window.location.hostname === "localhost" ||
-      window.location.hostname === "127.0.0.1";
-    const apiBase = isLocalhost ? "http://localhost:3000" : "";
+// Initialize default visit option cards with gradients and icons
+function initializeDefaultCards() {
+  // Map of visit IDs to icon names (using our icon names, will be mapped to Lucide names)
+  const iconMap = {
+    'schonbrunn': 'Palace',
+    'stephans': 'Church',
+    'ringstrasse': 'Map',
+    'hofburg': 'Palace',
+    'belvedere': 'Palace',
+    'opera': 'Theater',
+    'prater': 'Park',
+    'museums': 'Museum',
+    'cafe': 'Coffee',
+    'naschmarkt': 'ShoppingBag',
+    'graben': 'ShoppingBag',
+    'danube': 'Tower'
+  };
 
-    const response = await fetch(`${apiBase}/api/default-images`);
-    if (response.ok) {
-      const images = await response.json();
-
-      // Update visit option images
-      document.querySelectorAll(".visit-option").forEach((option) => {
-        const titleElement = option.querySelector(".visit-title");
-        if (titleElement) {
-          const title = titleElement.textContent.trim();
-          if (images[title]) {
-            const imageDiv = option.querySelector(".visit-image");
-            if (imageDiv) {
-              // Remove CSS classes and set background image
-              imageDiv.className = "visit-image";
-              imageDiv.style.backgroundImage = `url('${images[title]}')`;
-              imageDiv.style.backgroundSize = "cover";
-              imageDiv.style.backgroundPosition = "center";
-            }
-          }
-        }
-      });
+  document.querySelectorAll(".visit-option[data-visit]").forEach((option) => {
+    const visitId = option.dataset.visit;
+    const imageDiv = option.querySelector(".visit-image");
+    const titleElement = option.querySelector(".visit-title");
+    
+    if (!imageDiv || !titleElement) return;
+    
+    const title = titleElement.textContent.trim();
+    
+    // Remove old CSS classes that set background images
+    imageDiv.className = 'visit-image';
+    
+    // Generate gradient from title using palette system
+    const palette = getGradientPalette(title);
+    const gradientStyle = createGradientFromPalette(palette);
+    
+    // Apply gradient using new function
+    applyGradientToElement(imageDiv, gradientStyle);
+    
+    // Add icon container if it doesn't exist
+    let iconContainer = imageDiv.querySelector(".visit-icon-container");
+    if (!iconContainer) {
+      iconContainer = document.createElement("div");
+      iconContainer.className = "visit-icon-container";
+      imageDiv.appendChild(iconContainer);
     }
-  } catch (error) {
-    console.warn("Failed to load default images:", error);
+    
+    // Get icon name
+    const iconName = iconMap[visitId] || 'MapPin';
+    
+    // Render icon
+    setTimeout(() => {
+      renderLucideIcon(iconName, iconContainer, 64);
+      setTimeout(() => {
+        reinitializeLucideIcons();
+      }, 200);
+    }, 50);
+  });
+}
+
+// Global function to re-initialize all Lucide icons
+function reinitializeLucideIcons() {
+  if (typeof lucide !== 'undefined' && lucide.createIcons) {
+    try {
+      lucide.createIcons();
+    } catch (e) {
+      console.warn('Error reinitializing Lucide icons:', e);
+    }
   }
 }
 
@@ -1566,6 +1859,16 @@ document.addEventListener("DOMContentLoaded", function () {
   initWeather();
   // Initialize visit options generator
   initVisitOptionsGenerator();
-  // Load default images from cache
-  loadDefaultImages();
+  
+  // Wait for Lucide to load, then initialize default cards
+  const initDefaults = () => {
+    if (typeof lucide !== 'undefined') {
+      initializeDefaultCards();
+      // Re-initialize icons after a short delay
+      setTimeout(reinitializeLucideIcons, 500);
+    } else {
+      setTimeout(initDefaults, 100);
+    }
+  };
+  initDefaults();
 });

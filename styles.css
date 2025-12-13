@@ -560,14 +560,87 @@ body {
 .visit-image {
   width: 100%;
   height: 200px;
-  background-size: cover;
-  background-position: center;
-  transition: transform 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: transform 1s cubic-bezier(0.25, 0.46, 0.45, 0.94), filter 0.6s ease;
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  /* Default fallback background - will be overridden by gradient */
+  background: var(--dark-gradient);
+}
+
+/* Gradient layer - positioned behind content */
+.visit-image .gradient-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  /* Ensure gradient layer is visible */
+  opacity: 1;
+  visibility: visible;
+  /* Don't set background here - let inline styles handle it */
+  background: var(--gradient-bg, transparent);
+}
+
+/* Override any background images from old classes */
+.visit-image.has-gradient {
+  background-image: none !important;
+}
+
+.visit-image.has-gradient.visit-1,
+.visit-image.has-gradient.visit-2,
+.visit-image.has-gradient.visit-3,
+.visit-image.has-gradient.visit-4,
+.visit-image.has-gradient.visit-5,
+.visit-image.has-gradient.visit-6,
+.visit-image.has-gradient.visit-7,
+.visit-image.has-gradient.visit-8,
+.visit-image.has-gradient.visit-9,
+.visit-image.has-gradient.visit-10,
+.visit-image.has-gradient.visit-11,
+.visit-image.has-gradient.visit-12 {
+  background-image: none !important;
+}
+
+/* Ensure icon container is above gradient */
+.visit-image .visit-icon-container {
+  position: relative;
+  z-index: 10;
 }
 
 .visit-option:hover .visit-image {
   transform: scale(1.08);
+  filter: brightness(1.1);
+}
+
+.visit-icon-container {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.visit-icon-container i,
+.visit-icon-container svg {
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+  transition: transform 0.3s ease, filter 0.3s ease;
+  width: 64px;
+  height: 64px;
+  display: block;
+}
+
+.visit-option:hover .visit-icon-container i,
+.visit-option:hover .visit-icon-container svg {
+  transform: scale(1.1);
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.4));
 }
 
 .visit-attribution {
@@ -619,42 +692,22 @@ body {
   color: var(--dark-accent);
 }
 
-/* Visit Image Backgrounds */
-.visit-1 {
-  background: url("images/schonbrunn-palace.jpg") center/cover;
-}
-.visit-2 {
-  background: url("images/st-stephens-cathedral.jpg") center/cover;
-}
-.visit-3 {
-  background: url("images/ringstrasse.jpg") center/cover;
-}
-.visit-4 {
-  background: url("images/hofburg-palace.jpg") center/cover;
-}
-.visit-5 {
-  background: url("images/belvedere-palace.jpg") center/cover;
-}
-.visit-6 {
-  background: url("images/vienna-opera.jpg") center/cover;
-}
-.visit-7 {
-  background: url("images/prater-park.jpg") center/cover;
-}
-.visit-8 {
-  background: url("images/museum-quarter.jpg") center/cover;
-}
-.visit-9 {
-  background: url("images/vienna-cafe.jpg") center/cover;
-}
-.visit-10 {
-  background: url("images/naschmarkt.jpg") center/cover;
-}
-.visit-11 {
-  background: url("images/graben.jpg") center/cover;
-}
+/* Visit Image Backgrounds - Legacy support for static images */
+/* Note: AI-generated cards now use gradients instead */
+/* These classes are kept for backward compatibility but won't override inline gradient styles */
+.visit-1,
+.visit-2,
+.visit-3,
+.visit-4,
+.visit-5,
+.visit-6,
+.visit-7,
+.visit-8,
+.visit-9,
+.visit-10,
+.visit-11,
 .visit-12 {
-  background: url("images/danube-tower.jpg") center/cover;
+  /* Background images removed - now using gradients */
 }
 
 /* Modal Styles - Apple Minimal */
@@ -750,6 +803,56 @@ body {
   background-position: center;
   transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  /* Default fallback background */
+  background: var(--dark-gradient);
+}
+
+/* Gradient layer - positioned behind content */
+.modal-image .gradient-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Ensure icon container is above gradient */
+.modal-image .modal-icon-container {
+  position: relative;
+  z-index: 10;
+}
+
+.modal-icon-container {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.modal-icon-container i,
+.modal-icon-container svg {
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4));
+  color: rgba(255, 255, 255, 0.95);
+  stroke: rgba(255, 255, 255, 0.95);
+  width: 80px;
+  height: 80px;
+}
+
+.visit-icon-container i,
+.visit-icon-container svg {
+  width: 64px;
+  height: 64px;
+  display: block;
 }
 
 .modal-content:hover .modal-image {
@@ -1707,7 +1810,7 @@ body {
 .final-image {
   width: 100%;
   height: 120%;
-  background: url("images/vienna-night.jpg") center/cover;
+  background: url("images/vienna-hero.jpg") center/cover;
   opacity: 0.1;
   filter: grayscale(100%);
 }

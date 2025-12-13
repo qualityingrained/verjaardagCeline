@@ -151,6 +151,31 @@ app.post('/api/ai/visit-options', async (req, res) => {
       });
     }
 
+    // Normalize query for cache key (lowercase, trim)
+    const normalizedQuery = query.toLowerCase().trim();
+    const cacheFilePath = path.join(__dirname, 'ai-cache.json');
+    
+    // Try to load cache
+    let aiCache = {};
+    try {
+      const cacheData = await fs.readFile(cacheFilePath, 'utf8');
+      aiCache = JSON.parse(cacheData);
+    } catch (error) {
+      // Cache file doesn't exist yet, start with empty cache
+      aiCache = {};
+    }
+    
+    // Check if we have a cached result for this query
+    if (aiCache[normalizedQuery]) {
+      console.log(`Cache hit for query: "${query}"`);
+      return res.status(200).json({
+        options: aiCache[normalizedQuery],
+        cached: true
+      });
+    }
+    
+    console.log(`Cache miss for query: "${query}", calling AI...`);
+
     const systemPrompt = `You are a travel assistant for Vienna, Austria. Generate visit options based on user queries.
 
 CRITICAL: Return ONLY valid JSON object with an "options" array property. No additional text, markdown, or code blocks.
@@ -158,7 +183,8 @@ CRITICAL: Return ONLY valid JSON object with an "options" array property. No add
 Each option in the "options" array must include:
 - "id": unique identifier (lowercase, no spaces, e.g., "vienna-opera")
 - "title": short title for the card (max 30 characters)
-- "imageSearchTerm": an evocative, descriptive search term for finding beautiful images. For famous locations, use specific names (e.g., "vienna opera house", "schonbrunn palace vienna"). For less-known places or experiences, create vivid atmosphere descriptions that capture the mood and feeling (e.g., "elegant vienna restaurant candlelit dinner", "romantic vienna evening baroque architecture", "vienna coffee house cozy interior", "vienna street scene historic buildings"). Always focus on creating search terms that will return attractive, evocative images that suggest the experience and atmosphere, even if not the exact location. Use descriptive, mood-setting words like "elegant", "romantic", "cozy", "vibrant", "sophisticated", "charming", "beautiful", "stunning", "baroque", "imperial", "luxurious", etc.
+- "imageSearchTerm": an evocative, descriptive search term for color generation. For famous locations, use specific names (e.g., "vienna opera house", "schonbrunn palace vienna"). For less-known places or experiences, create vivid atmosphere descriptions that capture the mood and feeling (e.g., "elegant vienna restaurant candlelit dinner", "romantic vienna evening baroque architecture", "vienna coffee house cozy interior", "vienna street scene historic buildings"). Always focus on creating search terms with descriptive, mood-setting words like "elegant", "romantic", "cozy", "vibrant", "sophisticated", "charming", "beautiful", "stunning", "baroque", "imperial", "luxurious", etc.
+- "icon": EXACT Lucide icon name in PascalCase format (e.g., "Utensils", "Coffee", "Wine", "Landmark", "Camera", "Music", "Palace", "Church", "Building", "Castle", "Theater", "ShoppingBag", "MapPin", "Sparkles", "Drumstick", "Cake", "Beer", "Cocktail", "Museum", "Monument", "Tower", "Bridge", "Park", "TreePine", "Flower", "Star", "Gem", "Crown", "Scroll", "BookOpen", "Music2", "Headphones", "Mic", "Video", "Image", "Palette", "Brush", "PenTool", "ShoppingCart", "Store", "Hotel", "Bed", "Plane", "Train", "Car", "Bike", "Footprints", "Compass", "Navigation", "Flag", "Award", "Trophy", "Gift", "Heart", "Diamond", "Zap", "Sun", "Moon", "Cloud", "Droplet", "Flame", "Leaf", "Mountain", "Waves", "Umbrella", "Sunrise", "Sunset"). Choose the icon that best represents the specific place or experience. CRITICAL: Each option MUST use a DIFFERENT icon - no duplicates allowed across all options in the response.
 - "description": brief description for the card (1-2 sentences, max 100 characters)
 - "content": detailed HTML content for the modal popup including:
   * An introduction paragraph
@@ -169,7 +195,7 @@ Each option in the "options" array must include:
 
 Limit to 6-8 options maximum. Focus on Vienna attractions, activities, restaurants, or experiences related to the query.
 
-DO NOT include imageUrl in your response. Only provide imageSearchTerm. The system will automatically fetch real images based on the search term.
+IMPORTANT: We use Lucide Icons (https://lucide.dev). Return the exact icon name in PascalCase. Ensure every option has a UNIQUE icon - check your response to avoid duplicates.
 
 Example JSON format:
 {
@@ -178,6 +204,7 @@ Example JSON format:
       "id": "example-1",
       "title": "Example Title",
       "imageSearchTerm": "vienna opera house exterior",
+      "icon": "Theater",
       "description": "Brief description here",
       "content": "<h4>Introduction</h4><p>Detailed intro...</p><h4>What to See</h4><ul><li><strong>Item:</strong> Description</li></ul><h4>Best Time to Visit</h4><p>When to go...</p><h4>Tips</h4><p>Helpful tips...</p>"
     }
@@ -188,13 +215,15 @@ Example JSON format:
 
 Return a JSON object with an "options" array containing 6-8 options. 
 
-For each option, provide an "imageSearchTerm" that is an evocative, descriptive phrase designed to find beautiful, mood-setting images. 
-
-Guidelines:
-1. For famous locations: use specific names with descriptive atmosphere words ("vienna st stephens cathedral baroque architecture", "schonbrunn palace vienna imperial gardens")
-2. For less-known places or experiences: create vivid atmosphere descriptions ("elegant vienna restaurant candlelit dinner", "romantic vienna cafe cozy interior", "vienna baroque architecture golden hour", "vienna street market vibrant colors", "vienna nightlife elegant bar", "vienna wine bar sophisticated atmosphere")
-
-Always include descriptive, mood-setting words (elegant, romantic, cozy, vibrant, sophisticated, charming, beautiful, stunning, baroque, imperial, luxurious, intimate, lively, serene, grand, majestic, candlelit, golden hour, etc.) to ensure the search returns attractive, evocative images that capture the feeling and atmosphere of the experience, even if not the exact location. The system will automatically fetch real images based on these search terms.`;
+CRITICAL REQUIREMENTS:
+1. For imageSearchTerm: Use evocative, descriptive phrases for color generation
+   - For famous locations: use specific names with descriptive atmosphere words ("vienna st stephens cathedral baroque architecture", "schonbrunn palace vienna imperial gardens")
+   - For less-known places: create vivid atmosphere descriptions ("elegant vienna restaurant candlelit dinner", "romantic vienna cafe cozy interior", "vienna baroque architecture golden hour")
+   - Include descriptive, mood-setting words: elegant, romantic, cozy, vibrant, sophisticated, charming, beautiful, stunning, baroque, imperial, luxurious, etc.
+2. For icon: Choose a UNIQUE Lucide icon name (PascalCase) that best represents each specific place
+   - Examples: "Utensils" for restaurants, "Coffee" for cafes, "Wine" or "Cocktail" for bars, "Palace" or "Landmark" for attractions
+   - CRITICAL: Each option MUST have a DIFFERENT icon - verify no duplicates in your response
+   - Browse available icons at https://lucide.dev/icons/ if needed`;
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
@@ -227,140 +256,34 @@ Always include descriptive, mood-setting words (elegant, romantic, cozy, vibrant
       throw new Error('Invalid response format: expected options array');
     }
 
-    // Image cache file path
-    const cacheFilePath = path.join(__dirname, 'image-cache.json');
-    
-    // Load image cache from file
-    let imageCache = {};
-    try {
-      const cacheData = await fs.readFile(cacheFilePath, 'utf8');
-      imageCache = JSON.parse(cacheData);
-    } catch (error) {
-      // Cache file doesn't exist yet, start with empty cache
-      imageCache = {};
-    }
-    
-    // Function to test if an image URL is still valid
-    const testImageUrl = async (imageUrl) => {
-      try {
-        const response = await fetch(imageUrl, { method: 'HEAD' });
-        return response.ok;
-      } catch (error) {
-        return false;
-      }
-    };
-    
-    // Function to save cache to file
-    const saveCache = async () => {
-      try {
-        await fs.writeFile(cacheFilePath, JSON.stringify(imageCache, null, 2), 'utf8');
-      } catch (error) {
-        console.warn('Failed to save image cache:', error.message);
-      }
-    };
-    
-    // Track used image URLs to prevent duplicates
-    const usedImageUrls = new Set();
-    
-    // Function to get image URL from search term using Unsplash Search API
-    // Checks cache first, validates cached images, and fetches new ones if needed
-    const getImageUrl = async (searchTerm, title, usedUrls) => {
-      if (!searchTerm) {
-        searchTerm = 'vienna austria';
-      }
-      
-      // Check cache first using title as key
-      const cacheKey = title || searchTerm;
-      if (imageCache[cacheKey]) {
-        const cachedUrl = imageCache[cacheKey];
-        // Test if cached image still works
-        const isValid = await testImageUrl(cachedUrl);
-        if (isValid && !usedUrls.has(cachedUrl)) {
-          usedUrls.add(cachedUrl);
-          return cachedUrl;
-        } else {
-          // Cached image is broken or duplicate, remove from cache
-          delete imageCache[cacheKey];
-          await saveCache();
-        }
-      }
-      
-      // Add "vienna" to search term for better results if not already present
-      const fullSearchTerm = searchTerm.toLowerCase().includes('vienna') 
-        ? searchTerm 
-        : `${searchTerm} vienna`;
-      
-      try {
-        // Use Unsplash Search API (requires access key)
-        const unsplashAccessKey = process.env.UNSPLASH_ACCESS_KEY;
-        
-        if (unsplashAccessKey) {
-          // Fetch multiple results (still 1 API call) to have options if duplicates occur
-          const encodedTerm = encodeURIComponent(fullSearchTerm);
-          const apiUrl = `https://api.unsplash.com/search/photos?query=${encodedTerm}&per_page=10&orientation=landscape&client_id=${unsplashAccessKey}`;
-          
-          const response = await fetch(apiUrl);
-          
-          if (response.ok) {
-            const data = await response.json();
-            if (data.results && data.results.length > 0) {
-              // Find the first image that hasn't been used yet
-              for (const photo of data.results) {
-                const imageUrl = `${photo.urls.regular}?w=800&q=80&fit=crop`;
-                if (!usedUrls.has(imageUrl)) {
-                  usedUrls.add(imageUrl);
-                  // Save to cache
-                  imageCache[cacheKey] = imageUrl;
-                  await saveCache();
-                  return imageUrl;
-                }
-              }
-              
-              // If all results are duplicates, use the first one anyway (better than no image)
-              const photo = data.results[0];
-              const imageUrl = `${photo.urls.regular}?w=800&q=80&fit=crop`;
-              // Save to cache even if duplicate (for future use)
-              imageCache[cacheKey] = imageUrl;
-              await saveCache();
-              return imageUrl;
-            }
-          } else {
-            console.warn(`Unsplash API error: ${response.status} ${response.statusText}`);
-          }
-        } else {
-          console.warn('UNSPLASH_ACCESS_KEY not set, using fallback');
-        }
-        
-        // Fallback: Use Unsplash Source API (deprecated but still works)
-        const encodedTerm = encodeURIComponent(fullSearchTerm);
-        return `https://source.unsplash.com/800x600/?${encodedTerm}`;
-        
-      } catch (error) {
-        console.warn(`Error fetching image for "${searchTerm}":`, error.message);
-        // Fallback to default
-        return 'https://source.unsplash.com/800x600/?vienna,austria';
-      }
-    };
-
-    // Process options and add image URLs (async)
-    // Process sequentially to track duplicates across all options
+    // Process options - ensure icon is present, keep imageSearchTerm for color generation
     const processedOptions = [];
     for (const option of options) {
-      // Use imageSearchTerm if provided, otherwise use title or a default
-      const searchTerm = option.imageSearchTerm || option.title || 'vienna';
-      const title = option.title || searchTerm;
-      option.imageUrl = await getImageUrl(searchTerm, title, usedImageUrls);
+      // Ensure icon is present, default to MapPin if missing
+      if (!option.icon) {
+        option.icon = 'MapPin';
+      }
       
-      // Remove imageSearchTerm from final output (we only need imageUrl)
-      delete option.imageSearchTerm;
+      // Keep imageSearchTerm for client-side color generation
+      // No need to fetch images anymore
       
       processedOptions.push(option);
     }
     
     options = processedOptions;
 
+    // Save to cache
+    try {
+      aiCache[normalizedQuery] = options;
+      await fs.writeFile(cacheFilePath, JSON.stringify(aiCache, null, 2), 'utf8');
+      console.log(`Cached result for query: "${query}"`);
+    } catch (error) {
+      console.warn('Failed to save AI cache:', error.message);
+    }
+
     return res.status(200).json({
-      options: options
+      options: options,
+      cached: false
     });
     
   } catch (error) {
@@ -428,93 +351,10 @@ const defaultVisitOptions = [
 ];
 
 // Function to initialize default visit option images
+// Image initialization removed - now using CSS gradients and icons instead
 async function initializeDefaultImages() {
-  const cacheFilePath = path.join(__dirname, 'image-cache.json');
-  
-  // Load existing cache
-  let imageCache = {};
-  try {
-    const cacheData = await fs.readFile(cacheFilePath, 'utf8');
-    imageCache = JSON.parse(cacheData);
-  } catch (error) {
-    imageCache = {};
-  }
-  
-  // Test if an image URL is still valid
-  const testImageUrl = async (imageUrl) => {
-    try {
-      const response = await fetch(imageUrl, { method: 'HEAD' });
-      return response.ok;
-    } catch (error) {
-      return false;
-    }
-  };
-  
-  // Save cache to file
-  const saveCache = async () => {
-    try {
-      await fs.writeFile(cacheFilePath, JSON.stringify(imageCache, null, 2), 'utf8');
-    } catch (error) {
-      console.warn('Failed to save image cache:', error.message);
-    }
-  };
-  
-  // Fetch image for a visit option
-  const fetchImageForOption = async (title, searchTerm) => {
-    // Check if already in cache and valid
-    if (imageCache[title]) {
-      const isValid = await testImageUrl(imageCache[title]);
-      if (isValid) {
-        console.log(`✓ Cached image valid for: ${title}`);
-        return;
-      } else {
-        console.log(`✗ Cached image invalid, fetching new: ${title}`);
-        delete imageCache[title];
-      }
-    }
-    
-    // Fetch new image
-    const unsplashAccessKey = process.env.UNSPLASH_ACCESS_KEY;
-    if (!unsplashAccessKey) {
-      console.log(`⚠ Skipping ${title} - UNSPLASH_ACCESS_KEY not set`);
-      return;
-    }
-    
-    try {
-      const encodedTerm = encodeURIComponent(searchTerm);
-      const apiUrl = `https://api.unsplash.com/search/photos?query=${encodedTerm}&per_page=1&orientation=landscape&client_id=${unsplashAccessKey}`;
-      
-      const response = await fetch(apiUrl);
-      
-      if (response.ok) {
-        const data = await response.json();
-        if (data.results && data.results.length > 0) {
-          const photo = data.results[0];
-          const imageUrl = `${photo.urls.regular}?w=800&q=80&fit=crop`;
-          imageCache[title] = imageUrl;
-          console.log(`✓ Fetched image for: ${title}`);
-        } else {
-          console.log(`⚠ No results for: ${title}`);
-        }
-      } else {
-        console.log(`⚠ API error for ${title}: ${response.status}`);
-      }
-    } catch (error) {
-      console.log(`⚠ Error fetching image for ${title}:`, error.message);
-    }
-  };
-  
-  // Fetch images for all default options
-  console.log('\n🖼️  Initializing default visit option images...');
-  for (const option of defaultVisitOptions) {
-    await fetchImageForOption(option.title, option.searchTerm);
-    // Small delay to respect rate limits
-    await new Promise(resolve => setTimeout(resolve, 200));
-  }
-  
-  // Save updated cache
-  await saveCache();
-  console.log('✓ Default images initialization complete\n');
+  // No longer needed - using CSS gradients and Lucide icons
+  return;
 }
 
 // Start server
@@ -528,12 +368,5 @@ app.listen(PORT, async () => {
   console.log('\n⚠️  Make sure you have a .env file with:');
   console.log('   - OPENWEATHER_API_KEY=your_key_here');
   console.log('   - OPENAI_API_KEY=your_key_here (required for AI features)');
-  console.log('   - UNSPLASH_ACCESS_KEY=your_key_here (optional, for better image quality)');
-  console.log('\n📸 Get Unsplash Access Key: https://unsplash.com/developers');
-  
-  // Initialize default images on server start
-  initializeDefaultImages().catch(err => {
-    console.error('Error initializing default images:', err);
-  });
 });
 

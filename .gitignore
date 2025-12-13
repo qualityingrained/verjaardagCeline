@@ -1,8 +1,8 @@
 # Environment variables
 .env
 
-# Image cache
-image-cache.json
+# AI response cache
+ai-cache.json
 
 # Node modules
 node_modules/
